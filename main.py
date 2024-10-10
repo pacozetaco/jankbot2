@@ -29,10 +29,13 @@ class JankBot(commands.Bot):
         print(f"Logged in as {self.user}", flush=True)
 
         #ARK STATUS CHANNEL BOOT
-        channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
-        print(channel)
-        await channel.purge(limit=None)
-        ArkInfo(self, channel)
+        try:
+            channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
+            print(channel)
+            await channel.purge(limit=None)
+            ArkInfo(self, channel)
+        except Exception as e:
+            print(e)
 
 
 # Start the bot
