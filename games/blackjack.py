@@ -30,7 +30,6 @@ class BlackJack():
         embed = discord.Embed(title = self.game_content,color=0x00008B )
         return embed
 
-
     def draw_game(self):
         def paste_cards(hand, x):
             w = 32
@@ -56,7 +55,6 @@ class BlackJack():
         background.save(self.game_pic_path, "PNG")
         self.game_pic = discord.File(self.game_pic_path)
         
-
     async def add_reaction(self):
         for emoji in self.emojis:
             await self.game_instance.add_reaction(emoji)
@@ -211,7 +209,6 @@ class BlackJack():
                 await self.start_game(self.ctx, self.bet, self.pitboss)
         os.remove(self.game_pic_path)
 
-
     async def blackjack(self):
         await self.initialize_game()
         if self.game_ongoing == True:
@@ -221,7 +218,6 @@ class BlackJack():
         self.who_won()
         self.transaction_logic()
         await self.end_game()
-
 
     @classmethod
     async def start_game(cls, ctx, bet: int, pitboss):

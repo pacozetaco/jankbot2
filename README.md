@@ -1,1 +1,1 @@
-A FUCKING CASINO BOT IDK WTF IM DOING
+discord casino bot / discord ark admin manager

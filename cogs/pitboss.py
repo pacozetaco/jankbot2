@@ -1,5 +1,5 @@
 from discord.ext import commands
-import utils.db as db, config, games, discord
+import utils.db as db, config, games
 
 def casino_channel_only(func):
     async def wrapper(self, *args, **kwargs):
@@ -44,7 +44,6 @@ class PitBoss(commands.Cog):
     async def dr(self, ctx, bet: int):
         await games.DeathRoll.start_game(ctx, bet, self)
 
-
     @commands.command(name="bj")
     @casino_channel_only
     @can_play
@@ -71,7 +70,6 @@ class PitBoss(commands.Cog):
     async def balance(self, ctx):
         balance = await (db.get_balance(str(ctx.author)))
         await ctx.send(f"Your Balance: {balance}")
-
 
 async def setup(bot):
     await bot.add_cog(PitBoss(bot))

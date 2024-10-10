@@ -33,7 +33,6 @@ class DeathRoll():
         else:
             self.transaction_amount = -self.bet
 
-
     async def add_reaction(self):
         for emoji in self.emojis:
             await self.game_instance.add_reaction(emoji)
@@ -93,7 +92,6 @@ class DeathRoll():
                 self.whos_turn = "Player"
             else:
                 self.whos_turn = "Jankbot"
-
 
     async def end_game(self):
         await self.game_instance.edit(content = self.game_content)

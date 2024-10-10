@@ -4,7 +4,6 @@ from utils.ark.arkinfo import ArkInfo
 
 class JankBot(commands.Bot):
     def __init__(self):
-            #command prefix for all commands is !
             super().__init__(
                 command_prefix="!",
                 intents=discord.Intents.all()
@@ -15,7 +14,6 @@ class JankBot(commands.Bot):
         for filename in os.listdir(cog_path):
             if filename.endswith('.py'):
                 await self.load_extension(f'cogs.{filename[:-3]}') 
-                print(f"loaded {filename}")
                 
     async def on_message(self, message):
         if message.author.bot:
@@ -25,18 +23,14 @@ class JankBot(commands.Bot):
         await self.process_commands(message)
     
     async def on_ready(self):
-        #READY
         print(f"Logged in as {self.user}", flush=True)
-
         #ARK STATUS CHANNEL BOOT
         try:
             channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
-            print(channel)
             await channel.purge(limit=None)
             ArkInfo(self, channel)
         except Exception as e:
             print(e)
-
 
 # Start the bot
 if __name__ == "__main__":

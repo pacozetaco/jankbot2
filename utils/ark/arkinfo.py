@@ -1,7 +1,5 @@
-import docker, discord, asyncio, subprocess, config
+import docker, discord, asyncio, config
 from mcrcon import MCRcon
-
-import docker.errors
 from discord.ui import View
 
 class ArkInfo():
