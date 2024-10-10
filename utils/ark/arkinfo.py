@@ -10,7 +10,6 @@ class ArkInfo():
         self.channel = channel
         self.container_running = False
         self.ping = False
-        self.view = ArkControlView(self)
         self.message_instance = None
         self.last_status_message = None
         self.status_message = "Standby..."
