@@ -66,10 +66,11 @@ class ArkInfo():
         container_color = "🟢" if self.container_running else "🔴"
         self.status_message = (
             "ARK Server Status\n"
+            "----------------\n"
             f"{'Ping:':<7} {ping_color}\n"
             f"{'Server:':<4} {container_color}\n\n"
             f"{online} Players Online\n"
-            f"----------------\n"
+            "----------------\n"
             )
         if playerlist:
             self.status_message += "\n".join(playerlist)
