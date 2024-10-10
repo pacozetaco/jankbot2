@@ -1,4 +1,4 @@
-import utils.db as db, random, cogs.pitboss as Pitboss
+import utils.db as db, random
 
 class HiLo:
     def __init__(self, ctx, bet: int, pitboss):
