@@ -2,6 +2,7 @@ from mcrcon import MCRcon
 
 class ArkRcon:
     def __init__(self, command):
+
         self.command = command
         self.RCON_HOST = 
         self.RCON_PORT = 

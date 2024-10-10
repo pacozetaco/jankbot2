@@ -68,7 +68,7 @@ class ArkInfo():
             "**ARK Server Status**\n"
             f"{'Ping:':<20.9} **{ping_color}**\n"
             f"{'Server:':<18} **{container_color}**\n"
-            f"**{online} players online.**"
+            f"**{online} players online.**\n"
             )
         if playerlist:
             self.status_message += "\n".join(playerlist)
