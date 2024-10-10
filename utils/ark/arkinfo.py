@@ -49,14 +49,29 @@ class ArkInfo():
 
     async def send_status_message(self):
         # Determine the status colors
+
+        rcon = ArkRcon("ListPlayers")
+        players = rcon.execute_command()
+        i = 1
+        playerlist = []
+        for player in players.split("\n"):
+            if player.strip():
+                player_info = player.split(". ")
+                if len(player_info) > 1:
+                    player_name = player_info[1].split(",")[0]
+                    playerlist.append(f"{i}. {player_name}")
+                    i += 1
+        online = i-1
         ping_color = "🟢" if self.ping else "🔴"
         container_color = "🟢" if self.container_running else "🔴"
         self.status_message = (
             "**ARK Server Status**\n"
             f"{'Ping:':<20.9} **{ping_color}**\n"
-            f"{'Server:':<18} **{container_color}**"
+            f"{'Server:':<18} **{container_color}**\n"
+            f"**{online} players online.**"
             )
-        
+        if playerlist:
+            self.status_message += "\n".join(playerlist)
         if self.status_message != self.last_status_message:
             self.last_status_message = self.status_message
             self.view.update_button_states()
@@ -120,7 +135,8 @@ class ArkRcon:
     def execute_command(self):
         try:
             with MCRcon(self.RCON_HOST, self.RCON_PASSWORD, self.RCON_PORT) as mcr:
-                mcr.command(self.command)
+                reply = mcr.command(self.command)
+                return reply
         except Exception as e:
             print(f"Error connecting to RCON: {e}")
             return None

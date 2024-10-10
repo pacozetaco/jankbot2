@@ -1,4 +1,4 @@
-import utils.db as db, random, discord, os, cogs.pitboss
+import utils.db as db, random, discord, os
 from PIL import Image, ImageDraw, ImageFont
 
 class BlackJack():
