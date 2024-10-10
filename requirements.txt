@@ -1,0 +1,7 @@
+discord
+mysql-connector-python
+python-dotenv
+pillow
+docker
+paramiko
+mcrcon

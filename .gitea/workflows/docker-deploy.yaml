@@ -1,0 +1,69 @@
+name: Deploy Bot with Docker
+run-name: ${{ gitea.actor }} is deploying the bot locally
+on: [push]
+
+jobs:
+  Deploy-Bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set the Docker tag
+        id: set-tag
+        run: |
+          TAG=${{ gitea.ref }}
+          TAG=${TAG/refs\/heads\//}  # Remove 'refs/heads/'
+          echo "TAG=${TAG}" >> $GITHUB_ENV  # Export TAG as an environment variable                    
+
+      - run: echo "The ${{ gitea.repository }} repository has been cloned to the runner."
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Stop and Remove Existing Container
+        run: |
+          CONTAINER_NAME="jankbot2-container-${{ env.TAG }}"
+          if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+            docker stop ${CONTAINER_NAME} || true
+            docker rm ${CONTAINER_NAME} || true
+          fi                    
+
+      - name: Delete old Docker Image
+        run: |
+          docker rmi jankbot2:${{ env.TAG }} || true                    
+
+      - name: Build Docker image
+        run: |
+          docker build -t jankbot2:${{ env.TAG }} .                    
+
+      - name: Deploy using Docker 
+        run: |
+          docker run -d \
+          --name jankbot2-container-${{ env.TAG }} \
+          --network dockernet \
+          --ip 192.168.1.29 \
+          -e TZ=America/New_York \
+          -e MYSQL_HOST=${{ secrets.MYSQL_HOST }} \
+          -e MYSQL_PORT=${{ secrets.MYSQL_PORT }} \
+          -e MYSQL_USER=${{ secrets.MYSQL_USER }} \
+          -e MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+          -e MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }} \
+          -e DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} \
+          -e ARK_SFTP_USER=${{ secrets.ARK_SFTP_USER }} \
+          -e ARK_SFTP_PASS=${{ secrets.ARK_SFTP_PASS }} \
+          -e ARK_SFTP_UPLOAD_DIR=${{ secrets.ARK_SFTP_UPLOAD_DIR }} \
+          -e ARK_SFTP_SERVER=${{ secrets.ARK_SFTP_SERVER }} \
+          -e ARK_CONTAINER_NAME=${{ secrets.ARK_CONTAINER_NAME }} \
+          -e ARK_CONTAINER_IP=${{ secrets.ARK_CONTAINER_IP }} \
+          -e ARK_ADMIN_PW=${{ secrets.ARK_ADMIN_PW }} \
+          -e ARK_CONFIG_CHANNEL=${{ secrets.ARK_CONFIG_CHANNEL }} \
+          -e ARK_STATUS_CHANNEL=${{ secrets.ARK_STATUS_CHANNEL }} \
+          -e ARK_RCON_HOST=${{ secrets.ARK_RCON_HOST }} \
+          -e ARK_RCON_PORT=${{ secrets.ARK_RCON_PORT }} \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          --restart unless-stopped \
+          jankbot2:${{ env.TAG }}
+
+      - run: echo "Deployment completed. This job's status is ${{ job.status }}."
