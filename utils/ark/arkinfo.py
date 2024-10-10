@@ -67,15 +67,15 @@ class ArkInfo():
         self.status_message = (
             "**ARK Server Status**\n"
             f"{'Ping:':<20.9} **{ping_color}**\n"
-            f"{'Server:':<18} **{container_color}**\n"
-            f"**{online} players online.**\n"
+            f"{'Server:':<18} **{container_color}**\n\n"
+            f"**{online} Players Online**\n"
             )
         if playerlist:
             self.status_message += "\n".join(playerlist)
         if self.status_message != self.last_status_message:
             self.last_status_message = self.status_message
             self.view.update_button_states()
-            await self.message_instance.edit(view=self.view, content=self.status_message)
+            await self.message_instance.edit(view=self.view, content=f"```{self.status_message}```")
 
 class ArkControlView(View):
     def __init__(self, ark_info):
