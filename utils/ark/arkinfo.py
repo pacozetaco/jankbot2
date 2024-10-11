@@ -46,13 +46,10 @@ class ArkInfo():
 
     async def send_status_message(self):
         # Determine the status colors
-
+        players = None
         rcon = ArkRcon("ListPlayers")
-        try:
+        if self.ping and self.container_running:
             players = rcon.execute_command()
-        except:
-            players = None
-            pass
         i = 1
         playerlist = []
         if players:
