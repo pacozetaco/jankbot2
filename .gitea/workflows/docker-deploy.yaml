@@ -62,6 +62,7 @@ jobs:
           -e ARK_STATUS_CHANNEL=${{ secrets.ARK_STATUS_CHANNEL }} \
           -e ARK_RCON_HOST=${{ secrets.ARK_RCON_HOST }} \
           -e ARK_RCON_PORT=${{ secrets.ARK_RCON_PORT }} \
+          -e ARK_CHAT_CHANNEL=${{ secrets.ARK_CHAT_CHANNEL }} \
           -v /var/run/docker.sock:/var/run/docker.sock \
           --restart unless-stopped \
           jankbot2:${{ env.TAG }}

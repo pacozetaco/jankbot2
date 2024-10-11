@@ -117,21 +117,18 @@ class ArkControlView(View):
     async def wipe_dinos_callback(self, interaction):
         # Logic to wipe the dino data
         command = "destroywilddinos"
-        rcon = ArkRcon(command)
-        rcon.execute_command()
+        ArkRcon.send_command(command)
         command = "ServerChat No Dinos?"
-        rcon = ArkRcon(command)
-        rcon.execute_command()
+        ArkRcon.send_command(command)
         await interaction.response.send_message(f"Wiping Wild Dinos...", delete_after=5)
         
 
 class ArkRcon:
     def __init__(self, command):
         self.command = command
-        self.RCON_HOST = config.ARK_RCON_HOST
+        self.RCON_HOST = str(config.ARK_RCON_HOST)
         self.RCON_PORT = int(config.ARK_RCON_PORT)
-        self.RCON_PASSWORD = config.ARK_ADMIN_PW
-    
+        self.RCON_PASSWORD = str(config.ARK_ADMIN_PW)
 
     def execute_command(self):
         try:
@@ -144,4 +141,5 @@ class ArkRcon:
         except Exception as e:
             print(f"Error executing RCON command: {e}", flush=True)
             return None
+        
 
