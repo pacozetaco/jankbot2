@@ -17,32 +17,24 @@ class JankBot(commands.Bot):
                 
     async def on_message(self, message):
         if message.author.bot:
-            return  # Ignore messages from itself and bots/system msgs
+            return 
         if message.channel.id == int(config.ARK_CONFIG_CHANNEL):
             await config_uploader.upload_config(message)
         if message.channel.id == int(config.ARK_CHAT_CHANNEL):
-            rcon = ArkRcon(f"ServerChat {str(message.author)}: {str(message.content)}")
+            rcon = ArkRcon(f"ServerChat {str(message.author)} {str(message.content)}")
             rcon.execute_command()
         await self.process_commands(message)
 
-    
     async def on_ready(self):
         print(f"Logged in as {self.user}", flush=True)
-        #ARK STATUS CHANNEL BOOT
+        #get ark chat channel and ark info channel
         try:
+            chat_channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
             channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
             await channel.purge(limit=None)
-            await ArkInfo.start_loop(self, channel)
+            await ArkInfo.start_loop(self, channel, chat_channel)
         except Exception as e:
             print(e)
-        #ARK CHAT ROOM
-        # try: 
-        #     channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
-        #     ArkChat(channel, self)
-        # except Exception as e:
-        #     print(e)
-
-
-# Start the bot
+#main entry
 if __name__ == "__main__":
     JankBot().run(config.DISCORD_TOKEN)

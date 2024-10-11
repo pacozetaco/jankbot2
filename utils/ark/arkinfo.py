@@ -3,9 +3,10 @@ from mcrcon import MCRcon
 from discord.ui import View
 
 class ArkInfo():
-    def __init__(self, bot, channel):
+    def __init__(self, bot, channel, chat_channel):
         self.bot = bot
         self.channel = channel
+        self.chat_channel = chat_channel
         self.container_running = False
         self.ark_ping = False
         self.players = []
@@ -58,11 +59,15 @@ class ArkInfo():
                                     player_name = player_info[1].split(",")[0]
                                     self.players.append(f"{i}. {player_name}")
                                     i += 1
+                    rcon = ArkRcon("GetChat")
+                    chat_messages = rcon.execute_command()
+                    if chat_messages != 'Server received, But no response!! \n ' and not chat_messages.startswith('SERVER:'):
+                        await self.chat_channel.send(chat_messages) 
                 else:
                     self.container_running = False
             except:
                 self.container_running = False
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
 
     async def ping_manager(self):
         command = ['ping', config.ARK_CONTAINER_IP, '-c', '1', '-W', '1']
@@ -89,8 +94,8 @@ class ArkInfo():
             await asyncio.sleep(2)
 
     @classmethod
-    async def start_loop(cls, bot, channel):
-        instance = cls(bot, channel)
+    async def start_loop(cls, bot, channel, chat_channel):
+        instance = cls(bot, channel, chat_channel)
         await instance.loop()
 
 class ArkControlView(View):
@@ -115,32 +120,27 @@ class ArkControlView(View):
 
 
     async def start_button_callback(self, interaction):
-        # Logic to start the ARK server container
         arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
         if not arkadmin_role:
             return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
-        await interaction.response.send_message(f"Starting the ARK server...", delete_after=5)
+        await interaction.response.send_message(f"Starting the ARK server...",ephemeral=True, delete_after=5)
         await asyncio.to_thread(self.ark_info.container.start)
 
     async def stop_button_callback(self, interaction):
-        # Logic to stop the ARK server container
         arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
         if not arkadmin_role:
             return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
         self.ark_info.players_running = False
-        await interaction.response.send_message(f"Stopping the ARK server...", delete_after=5)
+        await interaction.response.send_message(f"Stopping the ARK server...Give this a sec, takes a bit.",ephemeral=True, delete_after=15)
         await asyncio.to_thread(self.ark_info.container.stop)
 
     async def wipe_dinos_callback(self, interaction):
         arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
         if not arkadmin_role:
             return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
-        # Logic to wipe the dino data
-        command = "destroywilddinos"
-        ArkRcon.send_command(command)
-        command = "ServerChat No Dinos?"
-        ArkRcon.send_command(command)
-        await interaction.response.send_message(f"Wiping Wild Dinos...", delete_after=5)
+        ArkRcon.execute_command("destroywilddinos")
+        ArkRcon.execute_command("ServerChat No Dinos?")
+        await interaction.response.send_message(f"Wiping Wild Dinos...",ephemeral=true, delete_after=5)
 
 class ArkRcon():
     def __init__(self, command):
