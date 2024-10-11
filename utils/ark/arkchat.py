@@ -12,7 +12,7 @@ class ArkChat():
         try:
             results = rcon.execute_command()
             return results
-        except
+        except:
             return None
     
     async def log_chat(self):
