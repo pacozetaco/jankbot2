@@ -141,7 +141,10 @@ class ArkRcon:
             with MCRcon(self.RCON_HOST, self.RCON_PASSWORD, self.RCON_PORT) as mcr:
                 reply = mcr.command(self.command)
                 return reply
+        except ConnectionRefusedError:
+            print("RCON connection refused. Check server settings.", flush=True)
+            return None
         except Exception as e:
-            print(f"Error connecting to RCON: {e}")
+            print(f"Error executing RCON command: {e}", flush=True)
             return None
 
