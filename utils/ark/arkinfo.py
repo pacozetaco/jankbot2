@@ -59,7 +59,7 @@ class ArkInfo():
                         player_name = player_info[1].split(",")[0]
                         playerlist.append(f"{i}. {player_name}")
                         i += 1
-            online = i-1
+        online = i-1
         ping_color = "🟢" if self.ping else "🔴"
         container_color = "🟢" if self.container_running else "🔴"
         self.status_message = (
