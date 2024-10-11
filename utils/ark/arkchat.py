@@ -10,7 +10,7 @@ class ArkChat():
         self.bot.loop.create_task(self.log_chat())
         print(self.channel)
 
-    async def get_chat(self):
+    def get_chat(self):
         rcon = ArkRcon("GetChat")
         results = rcon.execute_command()
         if results:
@@ -18,7 +18,7 @@ class ArkChat():
     
     async def log_chat(self):
         while True:
-            chat_messages = await self.get_chat()
+            chat_messages = self.get_chat()
             if chat_messages.startswith("SERVER"):
                 continue
             if chat_messages != 'Server received, But no response!! \n ':
