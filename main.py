@@ -1,7 +1,6 @@
 import config, discord, os, utils.ark.config_uploader as config_uploader 
 from discord.ext import commands
 from utils.ark.arkinfo import ArkInfo, ArkRcon
-from utils.ark.arkchat import ArkChat
 class JankBot(commands.Bot):
     def __init__(self):
         super().__init__(
