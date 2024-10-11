@@ -18,9 +18,9 @@ class ArkChat():
     async def log_chat(self):
         while True:
             chat_messages = self.get_chat()
-            if chat_messages is None
+            if chat_messages is None:
                 await asyncio.sleep(1)
                 continue
             if chat_messages != 'Server received, But no response!! \n ':
-                await self.channel.send(chat_messages)  # Send the message to the channel
-            await asyncio.sleep(1)  # Adjust the sleep duration as needed
+                await self.channel.send(chat_messages) 
+            await asyncio.sleep(1)
