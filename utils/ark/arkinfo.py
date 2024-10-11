@@ -73,6 +73,12 @@ class ArkInfo():
             )
         if playerlist:
             self.status_message += "\n".join(playerlist)
+        self.status_message += (
+            "\nARK Server Info\n"
+            "----------------\n"
+            f"Name: {config.ARK_SERVER_NAME}\n"
+            f"Pass: {config.ARK_SERVER_PASS}"
+        )
         if self.status_message != self.last_status_message:
             self.last_status_message = self.status_message
             self.view.update_button_states()
@@ -101,6 +107,9 @@ class ArkControlView(View):
 
     async def start_button_callback(self, interaction):
         # Logic to start the ARK server container
+        arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
+        if not arkadmin_role:
+            return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
         await interaction.response.send_message(f"Starting the ARK server...", delete_after=5)
         self.start_button.disabled = True
         await interaction.message.edit(view=self)
@@ -108,6 +117,9 @@ class ArkControlView(View):
 
     async def stop_button_callback(self, interaction):
         # Logic to stop the ARK server container
+        arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
+        if not arkadmin_role:
+            return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
         await interaction.response.send_message(f"Stopping the ARK server...", delete_after=5)
         self.stop_button.disabled = True
         self.wipe_dinos.disabled = True
@@ -115,6 +127,9 @@ class ArkControlView(View):
         self.ark_info.container.stop()
 
     async def wipe_dinos_callback(self, interaction):
+        arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
+        if not arkadmin_role:
+            return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
         # Logic to wipe the dino data
         command = "destroywilddinos"
         ArkRcon.send_command(command)

@@ -8,7 +8,6 @@ class JankBot(commands.Bot):
             command_prefix="!",
             intents=discord.Intents.all()
         )
-        self.arkchat = None
     #load cogs
     async def setup_hook(self):
         cog_path = './cogs'
@@ -22,7 +21,6 @@ class JankBot(commands.Bot):
         if message.channel.id == int(config.ARK_CONFIG_CHANNEL):
             await config_uploader.upload_config(message)
         if message.channel.id == int(config.ARK_CHAT_CHANNEL):
-            self.arkchat.logged_messages.add(f"SERVER: {str(message.author)}: {str(message.content)}")
             rcon = ArkRcon(f"ServerChat {str(message.author)}: {str(message.content)}")
             rcon.execute_command()
         await self.process_commands(message)
@@ -37,10 +35,10 @@ class JankBot(commands.Bot):
             ArkInfo(self, channel)
         except Exception as e:
             print(e)
+        #ARK CHAT ROOM
         try: 
             channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
-            print(channel)
-            self.arkchat = ArkChat(channel, self)
+            ArkChat(channel, self)
         except Exception as e:
             print(e)
 
