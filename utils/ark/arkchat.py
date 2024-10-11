@@ -9,12 +9,18 @@ class ArkChat():
 
     def get_chat(self):
         rcon = ArkRcon("GetChat")
-        results = rcon.execute_command()
-        return results
+        try:
+            results = rcon.execute_command()
+            return results
+        except
+            return None
     
     async def log_chat(self):
         while True:
             chat_messages = self.get_chat()
+            if chat_messages = None
+                await asyncio.sleep(1)
+                continue
             if chat_messages != 'Server received, But no response!! \n ':
                 await self.channel.send(chat_messages)  # Send the message to the channel
             await asyncio.sleep(1)  # Adjust the sleep duration as needed
