@@ -32,7 +32,7 @@ class JankBot(commands.Bot):
         try:
             channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
             await channel.purge(limit=None)
-            ArkInfo(self, channel)
+            await ArkInfo.start_loop(self, channel)
         except Exception as e:
             print(e)
         #ARK CHAT ROOM
