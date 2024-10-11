@@ -138,8 +138,10 @@ class ArkControlView(View):
         arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
         if not arkadmin_role:
             return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
-        ArkRcon.execute_command("destroywilddinos")
-        ArkRcon.execute_command("ServerChat No Dinos?")
+        rcon = ArkRcon("destroywilddinos")
+        rcon.execute_command()
+        rcon = ArkRcon("ServerChat No Dinos?")
+        rcon.execute_command()
         await interaction.response.send_message(f"Wiping Wild Dinos...",ephemeral=true, delete_after=5)
 
 class ArkRcon():
