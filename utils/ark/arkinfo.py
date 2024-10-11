@@ -33,7 +33,7 @@ class ArkInfo():
             if self.players:
                 self.message += "\n".join(self.players)
             self.message += (
-                "\nARK Server Info\n"
+                "\n\nARK Server Info\n"
                 "----------------\n"
                 f"Name: {config.ARK_SERVER_NAME}\n"
                 f"Pass: {config.ARK_SERVER_PASS}"
