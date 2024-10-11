@@ -48,7 +48,11 @@ class ArkInfo():
         # Determine the status colors
 
         rcon = ArkRcon("ListPlayers")
-        players = rcon.execute_command()
+        try:
+            players = rcon.execute_command()
+        except:
+            players = None
+            pass
         i = 1
         playerlist = []
         if players:
