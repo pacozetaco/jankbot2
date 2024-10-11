@@ -67,7 +67,7 @@ class ArkInfo():
                     self.container_running = False
             except:
                 self.container_running = False
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
 
     async def ping_manager(self):
         command = ['ping', config.ARK_CONTAINER_IP, '-c', '1', '-W', '1']
@@ -142,7 +142,7 @@ class ArkControlView(View):
         rcon.execute_command()
         rcon = ArkRcon("ServerChat No Dinos?")
         rcon.execute_command()
-        await interaction.response.send_message(f"Wiping Wild Dinos...",ephemeral=true, delete_after=5)
+        await interaction.response.send_message(f"Wiping Wild Dinos...",ephemeral=True, delete_after=5)
 
 class ArkRcon():
     def __init__(self, command):
