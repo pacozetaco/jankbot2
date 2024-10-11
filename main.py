@@ -36,11 +36,11 @@ class JankBot(commands.Bot):
         except Exception as e:
             print(e)
         #ARK CHAT ROOM
-        try: 
-            channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
-            ArkChat(channel, self)
-        except Exception as e:
-            print(e)
+        # try: 
+        #     channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
+        #     ArkChat(channel, self)
+        # except Exception as e:
+        #     print(e)
 
 
 # Start the bot
