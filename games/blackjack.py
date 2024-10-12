@@ -132,31 +132,31 @@ class BlackJack:
         player_score = self.hand_value(self.player_hand.hand)
         dealer_score = self.hand_value(self.dealer_hand.hand)
         if self.whos_turn == "Timeout" or player_score > 21:
-            self.result = "Lost"
+            self.result = "lost"
             return
         if dealer_score > 21:
-            self.result = "Won"
+            self.result = "won"
             return
         if player_score > dealer_score:
-            self.result = "Won"
+            self.result = "won"
             return
         elif player_score < dealer_score:
-            self.result = "Lost"
+            self.result = "lost"
             return
         else:
-            self.result = "Pushed"
+            self.result = "pushed"
             return
     
     async def transaction_logic(self):
         if self.whos_turn == "BlackJack":
-            if self.result == "Won":
+            if self.result == "won":
                 await db.set_balance(self.player, self.bet*1.5)
-            elif self.result == "Lost":
+            elif self.result == "lost":
                 await db.set_balance(self.player, -self.bet)
             return
-        if self.result == "Won":
+        if self.result == "won":
             await db.set_balance(self.player, self.bet)
-        elif self.result == "Lost":
+        elif self.result == "lost":
             await db.set_balance(self.player, -self.bet)
 
     async def end_game(self):
