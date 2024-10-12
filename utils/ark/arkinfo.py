@@ -130,7 +130,6 @@ class ArkControlView(View):
         arkadmin_role = discord.utils.get(interaction.user.roles, name="arkadmin")
         if not arkadmin_role:
             return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
-        self.ark_info.players_running = False
         await interaction.response.send_message(f"Stopping the ARK server...Give this a sec, takes a bit.",ephemeral=True, delete_after=15)
         await asyncio.to_thread(self.ark_info.container.stop)
 
