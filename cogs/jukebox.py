@@ -313,12 +313,12 @@ class JukeboxView(discord.ui.View):
         if interaction.data["custom_id"] == "Yes":
             if interaction.user == self.ctx.author:
                 self.boolean = True
-                await interaction.response.reply("Adding songs to queue... this takes a sec depending on how big the playlist is.", ephemeral=True, delete_after=5)
+                await interaction.response.send_message("Adding songs to queue... this takes a sec depending on how big the playlist is.", ephemeral=True, delete_after=5)
                 self.stop()
         elif interaction.data["custom_id"] == "No":
             if interaction.user == self.ctx.author:
                 self.boolean = False
-                await interaction.response.reply("No songs added to queue.", ephemeral=True, delete_after=5)
+                await interaction.response.send_message("No songs added to queue.", ephemeral=True, delete_after=5)
                 self.stop()
             return interaction.user,False
         elif interaction.data["custom_id"] == "Pause":
@@ -326,35 +326,35 @@ class JukeboxView(discord.ui.View):
                 if self.jukebox.voice_instance.is_paused():
                     return
                 self.jukebox.voice_instance.pause()
-                await interaction.response.reply("JankBot paused.", delete_after=5)
+                await interaction.response.send_message("JankBot paused.", delete_after=5, ephemeral=True)
             else:
-                await interaction.response.reply("We are not in the same voice channel.", ephemeral=True, delete_after=5)
+                await interaction.response.send_message("We are not in the same voice channel.", ephemeral=True, delete_after=5)
         elif interaction.data["custom_id"] == "Play":
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
                 if self.jukebox.voice_instance.is_playing():
                     return
                 self.jukebox.voice_instance.resume()
-                await interaction.response.reply("Resuming JankBot.", delete_after=5)
+                await interaction.response.send_message("Resuming JankBot.", delete_after=5)
             else:
-                await interaction.response.reply("We are not in the same voice channel.", ephemeral=True, delete_after=5)
+                await interaction.response.send_message("We are not in the same voice channel.", ephemeral=True, delete_after=5)
         elif interaction.data["custom_id"] == "Next Song":
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
-                await interaction.response.reply("Song skipped!", delete_after=5)
+                await interaction.response.send_message("Song skipped!", delete_after=5, ephemeral=True)
                 self.jukebox.voice_instance.stop()
                     
         elif interaction.data["custom_id"] == "Skip All":
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
                 self.jukebox.playlist = []
-                await interaction.response.reply("Nuking the playlist...", delete_after=5)
+                await interaction.response.send_message("Nuking the playlist...", delete_after=5, ephemeral=True)
                 self.jukebox.voice_instance.stop()
             else:
-                await interaction.response.reply("We are not in the same voice channel.", ephemeral=True, delete_after=5)
+                await interaction.response.send_message("We are not in the same voice channel.", ephemeral=True, delete_after=5)
         elif interaction.data["custom_id"] == "Shuffle Queue":
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
                 random.shuffle(self.jukebox.playlist)
-                await interaction.response.reply("Queue shuffled!", delete_after=5)
+                await interaction.response.send_message("Queue shuffled!", delete_after=5, ephemeral=True)
             else:
-                await interaction.response.reply("We are not in the same voice channel.", ephemeral=True, delete_after=5)
+                await interaction.response.send_message("We are not in the same voice channel.", ephemeral=True, delete_after=5)
 
 
 
