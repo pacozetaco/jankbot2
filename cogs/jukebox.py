@@ -319,7 +319,7 @@ class Jukebox(commands.Cog):
                     color=discord.Color.blue()
                 )
                 embed.set_image(url="https://i.imgur.com/AJpM3Oc.jpeg")
-                embed.add_field(name="" ,value="To add songs, go to #jukebox-spam channel and type `!play <youtube or youtube music link>`", inline=False)
+                embed.add_field(name="" ,value="To add songs, go to #jukebox-spam channel and type `!play <yt / yt music link or search for a song >`", inline=False)
                 embed.set_footer(text="We have Youtube Premium at home.")
                 embed.add_field(name=f"Song Queue {outof}/{length}", value="No songs in the playlist.", inline=False)  # Default playlist message
                 
