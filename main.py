@@ -33,8 +33,9 @@ class JankBot(commands.Bot):
             print(e)
         try:
             channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
-            print(channel)
             from cogs import jukebox
+            print("Loaded jukebox cog", flush=True)
+            print(channel, flush=True)
             await jukebox.setup(self, channel)
         except Exception as e:
             print(f"Failed to load jukebox cog: {e}", flush=True)
