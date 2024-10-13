@@ -10,6 +10,7 @@ RUN pip install --upgrade pip
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r /jankbot2/requirements.txt
+RUN apk add --no-cache ffmpeg
 
 # Run mainio.py when the container launches
 CMD ["python", "./main.py"]
