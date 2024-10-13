@@ -30,19 +30,13 @@ class JankBot(commands.Bot):
             channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
             await channel.purge(limit=None)
             await ArkInfo.start_loop(self, channel, chat_channel)
-        except Exception as e:
-            print(e)
-    
-    async def on_ready(self):
-        try:
-            channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
+            jukebox_channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
             from cogs import jukebox
             print("Loaded jukebox cog", flush=True)
-            print(channel, flush=True)
-            await jukebox.setup(self, channel)
+            await jukebox.setup(self, jukebox_channel)
         except Exception as e:
-            print(f"Failed to load jukebox cog: {e}", flush=True)
-            print(e, flush=True)
+            print(e)
+
 #main entry
 if __name__ == "__main__":
     JankBot().run(config.DISCORD_TOKEN)
