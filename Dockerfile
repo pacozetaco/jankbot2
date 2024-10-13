@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9-alpine
+FROM python:3.9
 
 # Set the working directory in the container to /jankbot
 WORKDIR /jankbot2
@@ -10,7 +10,7 @@ RUN pip install --upgrade pip
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r /jankbot2/requirements.txt
-RUN apk add --no-cache ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
 
 # Run mainio.py when the container launches
 CMD ["python", "./main.py"]
