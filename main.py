@@ -22,27 +22,27 @@ class JankBot(commands.Bot):
             rcon.execute_command()
         await self.process_commands(message)
 
-async def on_ready(self):
-    print(f"Logged in as {self.user}", flush=True)
+    async def on_ready(self):
+        print(f"Logged in as {self.user}", flush=True)
 
-    # Attempt to initialize ArkInfo
-    try:
-        chat_channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
-        channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
-        await channel.purge(limit=None)
-        await ArkInfo.start_loop(self, channel, chat_channel)
-        print("Loaded ArkInfo", flush=True)
-    except Exception as e:
-        print(f"Error initializing ArkInfo: {e}", flush=True)
+        # Attempt to initialize ArkInfo
+        try:
+            chat_channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
+            channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
+            await channel.purge(limit=None)
+            self.loop.create_task(ArkInfo.start_loop(self, channel, chat_channel))
+            print("Loaded ArkInfo", flush=True)
+        except Exception as e:
+            print(f"Error initializing ArkInfo: {e}", flush=True)
 
-    # Attempt to initialize Jukebox
-    try:
-        jukebox_channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
-        from cogs import jukebox
-        print("Loaded jukebox cog", flush=True)
-        await jukebox.setup(self, jukebox_channel)
-    except Exception as e:
-        print(f"Error initializing Jukebox: {e}", flush=True)
+        # Attempt to initialize Jukebox
+        try:
+            jukebox_channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
+            from cogs import jukebox
+            print("Loaded jukebox cog", flush=True)
+            self.loop.create_task(jukebox.setup(self, jukebox_channel))
+        except Exception as e:
+            print(f"Error initializing Jukebox: {e}", flush=True)
 
 
 #main entry
