@@ -32,7 +32,7 @@ class JankBot(commands.Bot):
         except Exception as e:
             print(e)
         try:
-            channel = self.get_channel(1294833264284008541)
+            channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
             print(channel)
             from cogs import jukebox
             await jukebox.setup(self, channel)

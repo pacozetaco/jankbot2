@@ -65,6 +65,7 @@ jobs:
           -e ARK_CHAT_CHANNEL=${{ secrets.ARK_CHAT_CHANNEL }} \
           -e ARK_SERVER_NAME=${{ secrets.ARK_SERVER_NAME }} \
           -e ARK_SERVER_PASS=${{ secrets.ARK_SERVER_PASS }} \
+          -e JUKEBOX_INFO_CHANNEL=${{ secrets.JUKEBOX_INFO_CHANNEL }} \
           -v /var/run/docker.sock:/var/run/docker.sock \
           --restart unless-stopped \
           jankbot2:${{ env.TAG }}
