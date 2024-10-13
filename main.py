@@ -1,4 +1,4 @@
-import config, os, discord, utils.ark.config_uploader as config_uploader 
+import config, discord, utils.ark.config_uploader as config_uploader 
 from discord.ext import commands
 from utils.ark.arkinfo import ArkInfo, ArkRcon
 class JankBot(commands.Bot):
@@ -7,7 +7,7 @@ class JankBot(commands.Bot):
             command_prefix="!",
             intents=discord.Intents.all()
         )
-    #load cogs
+    #load cogs why does it work on my machine
     async def setup_hook(self):
         await self.load_extension('cogs.pitboss')
                 
