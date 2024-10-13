@@ -207,72 +207,83 @@ class Jukebox(commands.Cog):
         channel = self.channel
         print(channel)
         await channel.purge()
+
+        # Initial embed when starting up the Jukebox
         embed = discord.Embed(
             title="Booting up Jukebox",
-            )
+            color=discord.Color.blue()
+        )
         message_instance = await channel.send(embed=embed)
-        last_playing = ""
+
+        last_playing_message = "No song playing"
         last_playlist = ""
-        last_image = ""
+        last_image = "https://i.imgur.com/AJpM3Oc.jpeg"  # Default image
         currently_playing_message = "No song playing"
+
         while True:
             length = len(self.playlist)
-            if length > 10:
-                outof = 10
-            else:
-                outof = length
-            playlist = f"Song Queue:    {outof}/{length}\n---------------------\n"
-            i = 1
-            if self.playlist:
-                for song in self.playlist:
-                    minutes = int(song['duration'] / 60)
-                    seconds = int(song['duration'] % 60)
-                    if seconds < 10:
-                        seconds = f"0{seconds}"
-                    if seconds == 0:
-                        seconds = "00"
-                    playlist += (f"{i}. {song['artist']} - {song['song_name']} - {minutes}:{seconds}\n")
-                    i += 1
-                    if i > 10:
-                        break
+            outof = min(length, 10)  # Adjust max songs displayed
+            playlist = ""
+            # Construct the playlist string
+            for i, song in enumerate(self.playlist[:10], 1):
+                minutes = int(song['duration'] / 60)
+                seconds = f"{int(song['duration'] % 60):02d}"
+                # Format the song info with fixed-width fields
+                playlist += f"`{i:2}. {song['artist'][:13]:<13} - {song['song_name'][:26]:<26} - {minutes}:{seconds}`\n"
+
             if self.currently_playing is not None:
+                # Format currently playing song
                 minutes = int(self.currently_playing['duration'] / 60)
-                seconds = int(self.currently_playing['duration'] % 60)
-                if seconds < 10:
-                    seconds = f"0{seconds}"
-                if seconds == 0:
-                    seconds = "00"
-                currently_playing_message = f"Playing: {self.currently_playing['artist']} - {self.currently_playing['song_name']} - {minutes}:{seconds}"
-                image_link = f"https://img.youtube.com/vi/{self.currently_playing['id']}/maxresdefault.jpg"
-                buttons = ["Play", "Pause", "Next Song", "Skip All", "Shuffle Queue"]
-                view = JukeboxView(buttons, self, channel)
-                embed = discord.Embed(
-                    title=currently_playing_message,
+                seconds = f"{int(self.currently_playing['duration'] % 60):02d}"
+                if self.voice_instance.is_paused() == True:
+                    pp = "Paused"
+                else:
+                    pp = "Playing"
+                currently_playing_message = (
+                    f"{pp}: {self.currently_playing['artist']} - "
+                    f"{self.currently_playing['song_name']} - {minutes}:{seconds}"
                 )
-                if last_image != image_link:
-                    last_image = image_link
-                    embed.set_footer(text=playlist)
+                image_link = f"https://img.youtube.com/vi/{self.currently_playing['id']}/maxresdefault.jpg"
+
+                # Check if there are changes to update the embed
+                if (last_playing_message != currently_playing_message or
+                    last_playlist != playlist or
+                    last_image != image_link):
+                    
+                    # Create a new embed for currently playing
+                    embed = discord.Embed(title=currently_playing_message, color=discord.Color.blue())
                     embed.set_image(url=image_link)
-                    await message_instance.edit(embed=embed, view=view)
-                if last_playing != currently_playing_message:
-                    last_playing = currently_playing_message
-                    embed.set_footer(text=playlist)
-                    embed.set_image(url=image_link)
-                    await message_instance.edit(embed=embed, view=view)
-                if last_playlist != playlist:
+                    embed.add_field(name=f"Song Queue {outof}/{length}", value=playlist, inline=False)  # Add the playlist as a field
+                    
+                    # Update the last states
+                    last_playing_message = currently_playing_message
                     last_playlist = playlist
-                    embed.set_footer(text=playlist)
-                    embed.set_image(url=image_link)
+                    last_image = image_link
+                    
+                    # Send updated embed
+                    buttons = ["Play", "Pause", "Next Song", "Skip All", "Shuffle Queue"]
+                    view = JukeboxView(buttons, self, channel)
                     await message_instance.edit(embed=embed, view=view)
+            
             else:
+                # Default case when no song is playing
                 embed = discord.Embed(
-                    title="No songs playing at the moment.",
-                    description=f"To add songs, go to song-queue channel and type `!play <youtube link>`",
+                    color=discord.Color.blue()
                 )
                 embed.set_image(url="https://i.imgur.com/AJpM3Oc.jpeg")
-                embed.set_footer(text="We have YouTube premium at home.")
-                await message_instance.edit(embed=embed, view=None)
+                embed.add_field(name="" ,value="To add songs, go to #jukebox-spam channel and type `!play <youtube or youtube music link>`", inline=False)
+                embed.set_footer(text="We have Youtube Premium at home.")
+                embed.add_field(name=f"Song Queue {outof}/{length}", value="No songs in the playlist.", inline=False)  # Default playlist message
+                
+                # Only update if the message is not already showing this embed
+                if last_playing_message != "No song playing at the moment.":
+                    last_playing_message = "No song playing at the moment."
+                    await message_instance.edit(embed=embed, view=None)
+
             await asyncio.sleep(3)
+
+
+
 
 
 
