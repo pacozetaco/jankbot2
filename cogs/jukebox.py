@@ -215,8 +215,8 @@ class Jukebox(commands.Cog):
         currently_playing_message = "No song playing"
         while True:
             length = len(self.playlist)
-            if length > 5:
-                outof = 5
+            if length > 10:
+                outof = 10
             else:
                 outof = length
             playlist = f"Song Queue:    {outof}/{length}\n---------------------\n"
@@ -231,7 +231,7 @@ class Jukebox(commands.Cog):
                         seconds = "00"
                     playlist += (f"{i}. {song['artist']} - {song['song_name']} - {minutes}:{seconds}\n")
                     i += 1
-                    if i > 5:
+                    if i > 10:
                         break
             if self.currently_playing is not None:
                 minutes = int(self.currently_playing['duration'] / 60)
@@ -245,16 +245,17 @@ class Jukebox(commands.Cog):
                 )
                 if last_image != image_link:
                     last_image = image_link
+                    embed.set_footer(text=playlist)
                     embed.set_image(url=image_link)
                     await message_instance.edit(embed=embed, view=view)
                 if last_playing != currently_playing_message:
                     last_playing = currently_playing_message
-                    embed.set_author(name=playlist)
+                    embed.set_footer(text=playlist)
                     embed.set_image(url=image_link)
                     await message_instance.edit(embed=embed, view=view)
                 if last_playlist != playlist:
                     last_playlist = playlist
-                    embed.set_author(name=playlist)
+                    embed.set_footer(text=playlist)
                     embed.set_image(url=image_link)
                     await message_instance.edit(embed=embed, view=view)
             else:
