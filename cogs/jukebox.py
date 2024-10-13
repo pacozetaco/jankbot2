@@ -236,6 +236,10 @@ class Jukebox(commands.Cog):
             if self.currently_playing is not None:
                 minutes = int(self.currently_playing['duration'] / 60)
                 seconds = int(self.currently_playing['duration'] % 60)
+                if seconds < 10:
+                    seconds = f"0{seconds}"
+                if seconds == 0:
+                    seconds = "00"
                 currently_playing_message = f"Playing: {self.currently_playing['artist']} - {self.currently_playing['song_name']} - {minutes}:{seconds}"
                 image_link = f"https://img.youtube.com/vi/{self.currently_playing['id']}/maxresdefault.jpg"
                 buttons = ["Play", "Pause", "Next Song", "Skip All", "Shuffle Queue"]
