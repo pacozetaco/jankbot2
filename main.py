@@ -31,6 +31,8 @@ class JankBot(commands.Bot):
             await ArkInfo.start_loop(self, channel, chat_channel)
         except Exception as e:
             print(e)
+    
+    async def on_ready(self):
         try:
             channel = self.get_channel(int(config.JUKEBOX_INFO_CHANNEL))
             from cogs import jukebox
