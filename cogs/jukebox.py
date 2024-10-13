@@ -9,8 +9,6 @@ def jukebox_channel_only(func):
         return await func(self, *args)
     return wrapper
 
-
-
 class Jukebox(commands.Cog):
     def __init__(self, bot, channel):
         self.channel = channel
@@ -74,6 +72,7 @@ class Jukebox(commands.Cog):
         elif self.voice_id is None:
             self.voice_instance = await voice_channel.connect()
             self.voice_id = voice_channel
+            self.bot.loop.create_task(self.afk_timer())
 
         request = ctx.message.content.split("!play ", 1)[1]
         youtube_regex = r'(https?://)?(www\.)?(youtube\.com|youtu\.be|music\.youtube\.com)/'
@@ -97,10 +96,63 @@ class Jukebox(commands.Cog):
                     self.voice_id = None
             await asyncio.sleep(60)
 
+    async def search_ydl(self, query):
+        max_results = 5
+        ydl_opts = {
+            'quiet': True,
+            'noplaylist': True,
+            'extract_flat': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            search_query = f"ytsearch{max_results}:music {query}"
+            info = await asyncio.to_thread(ydl.extract_info, search_query, download=False)
+            return info
 
-    async def search_youtube(self, ctx, request):
-        await ctx.send(content=f"Searching for: {request}... Just kidding, WIP")
+    async def search_youtube(self, ctx, query):
+        info = await self.search_ydl(query)
+        search_embeds = []
+        songs = []
+        for i, entry in enumerate(info['entries'], start=1):
+            song_info = {
+                'artist': entry.get('uploader'),
+                'song_name': entry.get('title'),
+                'url': entry.get('url'),
+                'id': entry.get('id'),
+                'duration': entry.get('duration')
+            }
+            minutes = int(song_info["duration"] / 60)
+            seconds = f"{int(song_info['duration'] % 60):02d}"
+            songs.append(song_info)
+            # Define max lengths
+            max_title_length = 43  # Increase title length by 5
+            max_description_length = 38  # Total length for description
 
+            # Calculate duration length to adjust title formatting
+            duration_length = len(f"{minutes}:{seconds}")  # Get the length of the formatted duration
+            artist_display = song_info['artist'][:max_title_length - duration_length - 15]  # Adjust for index and duration length
+
+            # Create the title with maximum character space used
+            title = f"`{i:2}. {artist_display:<{max_title_length - duration_length - 15}}   {minutes}:{seconds}`"
+
+            # Ensure song name takes up maximum description length
+            description = f"`  {song_info['song_name'][:max_description_length]:<{max_description_length}}`"
+
+            # Create embed with title and song name as description
+            search_embed = discord.Embed(title=title, description=description, color=0x3b88c3)
+            search_embed.set_thumbnail(url=f"https://img.youtube.com/vi/{song_info['id']}/maxresdefault.jpg")
+            search_embeds.append(search_embed)
+        max_button = len(search_embeds) + 1
+        buttons = ""
+        i = 1
+        while i < max_button:
+            buttons += str(i)
+            i += 1
+        view = JukeboxView(buttons, self, ctx)
+        await ctx.reply(embeds=search_embeds, view=view, delete_after=15)
+        await view.wait()
+        if view.reply != None: 
+            chosen_song = songs.pop(int(view.reply)-1)
+            await self.process_request(ctx, chosen_song['url'])
 
     async def process_request(self, ctx, video_url):
         self.ctx = ctx
@@ -111,7 +163,7 @@ class Jukebox(commands.Cog):
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info_dict = ydl.extract_info(video_url, download=False)
+                info_dict = await asyncio.to_thread(ydl.extract_info, video_url, download=False)
                 if 'entries' in info_dict:
                     view = JukeboxView(["Yes", "No"], self, ctx)
                     content = (f"Playlist detected with {len(info_dict['entries'])} songs. Queue em'?")
@@ -149,8 +201,6 @@ class Jukebox(commands.Cog):
         self.currently_playing = self.playlist.pop(0)
         self.play_audio(self.currently_playing['url'])
 
-
-
     def play_audio(self, url):
         ydl_opts = {
         'format': 'bestaudio/best',
@@ -171,7 +221,6 @@ class Jukebox(commands.Cog):
         self.voice_instance.volume = 0.8
         self.voice_instance.play(source, after=lambda e: self.after_playback(e))
     
-
     def after_playback(self, error):
         if error:
             print(f"Error occurred: {error}")
@@ -201,7 +250,6 @@ class Jukebox(commands.Cog):
                 await asyncio.sleep(60)
             else:
                 break
-
 
     async def info_channel(self):
         channel = self.channel
@@ -282,15 +330,8 @@ class Jukebox(commands.Cog):
 
             await asyncio.sleep(3)
 
-
-
-
-
-
-
 async def setup(bot, channel):
     await bot.add_cog(Jukebox(bot, channel))
-
 
 class JukeboxView(discord.ui.View):
     def __init__(self, buttons, jukebox, ctx):
@@ -338,6 +379,7 @@ class JukeboxView(discord.ui.View):
                     return
                 self.jukebox.voice_instance.pause()
                 await interaction.response.send_message("JankBot paused.", delete_after=5, ephemeral=True)
+                self.jukebox.bot.loop.create_task(self.afk_timer())
             else:
                 await interaction.response.send_message("We are not in the same voice channel.", ephemeral=True, delete_after=5)
         elif interaction.data["custom_id"] == "Play":
@@ -366,7 +408,31 @@ class JukeboxView(discord.ui.View):
                 await interaction.response.send_message("Queue shuffled!", delete_after=5, ephemeral=True)
             else:
                 await interaction.response.send_message("We are not in the same voice channel.", ephemeral=True, delete_after=5)
-
+        elif interaction.data["custom_id"] == "1":
+            if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
+                await interaction.response.send_message("Adding song to queue...", ephemeral=True, delete_after=5)
+                self.reply = "1"
+                self.stop()
+        elif interaction.data["custom_id"] == "2":
+            if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
+                await interaction.response.send_message("Adding song to queue...", ephemeral=True, delete_after=5)
+                self.reply = "2"
+                self.stop()
+        elif interaction.data["custom_id"] == "3":
+            if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
+                await interaction.response.send_message("Adding song to queue...", ephemeral=True, delete_after=5)
+                self.reply = "3"
+                self.stop()
+        elif interaction.data["custom_id"] == "4":
+            if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
+                await interaction.response.send_message("Adding song to queue...", ephemeral=True, delete_after=5)
+                self.reply = "4"
+                self.stop()
+        elif interaction.data["custom_id"] == "5":
+            if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_id:
+                await interaction.response.send_message("Adding song to queue...", ephemeral=True, delete_after=5)
+                self.reply = "5"
+                self.stop()
 
 
 

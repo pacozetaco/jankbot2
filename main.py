@@ -7,7 +7,7 @@ class JankBot(commands.Bot):
             command_prefix="!",
             intents=discord.Intents.all()
         )
-    #load cogs why does it work on my machine
+    #load cogs
     async def setup_hook(self):
         await self.load_extension('cogs.pitboss')
         opus_path = '/usr/lib/libopus.so.0.10.1'  # apk add --no-cache opus-dev
@@ -15,25 +15,25 @@ class JankBot(commands.Bot):
     async def on_message(self, message):
         if message.author.bot:
             return 
-        if message.channel.id == int(config.ARK_CONFIG_CHANNEL):
-            await config_uploader.upload_config(message)
-        if message.channel.id == int(config.ARK_CHAT_CHANNEL):
-            rcon = ArkRcon(f"ServerChat {str(message.author)} {str(message.content)}")
-            rcon.execute_command()
+        # if message.channel.id == int(config.ARK_CONFIG_CHANNEL):
+        #     await config_uploader.upload_config(message)
+        # if message.channel.id == int(config.ARK_CHAT_CHANNEL):
+        #     rcon = ArkRcon(f"ServerChat {str(message.author)} {str(message.content)}")
+        #     rcon.execute_command()
         await self.process_commands(message)
 
     async def on_ready(self):
         print(f"Logged in as {self.user}", flush=True)
 
         # Attempt to initialize ArkInfo
-        try:
-            chat_channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
-            channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
-            await channel.purge(limit=None)
-            self.loop.create_task(ArkInfo.start_loop(self, channel, chat_channel))
-            print("Loaded ArkInfo", flush=True)
-        except Exception as e:
-            print(f"Error initializing ArkInfo: {e}", flush=True)
+        # try:
+        #     chat_channel = self.get_channel(int(config.ARK_CHAT_CHANNEL))
+        #     channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
+        #     await channel.purge(limit=None)
+        #     self.loop.create_task(ArkInfo.start_loop(self, channel, chat_channel))
+        #     print("Loaded ArkInfo", flush=True)
+        # except Exception as e:
+        #     print(f"Error initializing ArkInfo: {e}", flush=True)
 
         # Attempt to initialize Jukebox
         try:
