@@ -189,6 +189,8 @@ class Jukebox(commands.Cog):
     async def afk_timer(self):
         i = 1
         while True:
+            if self.voice_instance is None:
+                break
             if self.voice_instance.is_playing() == False:
                 i += 1
                 if i > 10:

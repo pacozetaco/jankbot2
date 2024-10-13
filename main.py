@@ -10,7 +10,8 @@ class JankBot(commands.Bot):
     #load cogs why does it work on my machine
     async def setup_hook(self):
         await self.load_extension('cogs.pitboss')
-                
+        opus_path = '/usr/lib/libopus.so.0.10.1'  # apk add --no-cache opus-dev
+        discord.opus.load_opus(opus_path)
     async def on_message(self, message):
         if message.author.bot:
             return 
