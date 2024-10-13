@@ -6,6 +6,3 @@ docker
 paramiko
 mcrcon
 yt_dlp
-re
-asyncio
-functools
