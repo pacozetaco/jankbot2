@@ -5,3 +5,4 @@ pillow
 docker
 paramiko
 mcrcon
+yt_dlp

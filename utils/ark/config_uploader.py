@@ -4,7 +4,7 @@ async def upload_config(message):
     if message.attachments:
         for attachment in message.attachments:
             if attachment.filename == "GameUserSettings.ini" or attachment.filename == "Game.ini":
-                file_path = f"./assets/temp/{attachment.filename}"
+                file_path = f"./temp/{attachment.filename}"
                 await attachment.save(file_path)
                 await message.reply(f"Config file {attachment.filename} received!")
 

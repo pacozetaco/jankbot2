@@ -1,4 +1,4 @@
-import config, discord, os, utils.ark.config_uploader as config_uploader 
+import config, os, discord, utils.ark.config_uploader as config_uploader 
 from discord.ext import commands
 from utils.ark.arkinfo import ArkInfo, ArkRcon
 class JankBot(commands.Bot):
@@ -9,10 +9,7 @@ class JankBot(commands.Bot):
         )
     #load cogs
     async def setup_hook(self):
-        cog_path = './cogs'
-        for filename in os.listdir(cog_path):
-            if filename.endswith('.py'):
-                await self.load_extension(f'cogs.{filename[:-3]}') 
+        await self.load_extension('cogs.pitboss')
                 
     async def on_message(self, message):
         if message.author.bot:
@@ -32,6 +29,13 @@ class JankBot(commands.Bot):
             channel = self.get_channel(int(config.ARK_STATUS_CHANNEL))
             await channel.purge(limit=None)
             await ArkInfo.start_loop(self, channel, chat_channel)
+        except Exception as e:
+            print(e)
+        try:
+            channel = self.get_channel(1294833264284008541)
+            print(channel)
+            from cogs import jukebox
+            await jukebox.setup(self, channel)
         except Exception as e:
             print(e)
 #main entry
