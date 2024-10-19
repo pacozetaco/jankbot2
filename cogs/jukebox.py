@@ -6,9 +6,7 @@ def jukebox_channel_only(func):
     async def wrapper(self, *args):
         if args[0].channel.name != "jukebox-spam":
             return
-        print(f"Channel check passed for {args[0].channel.name}", flush=True)
         return await func(self, *args)
-    print("Jukebox channel only decorator defined", flush=True)
     return wrapper
     
 class JukeBox(commands.Cog):
@@ -17,7 +15,6 @@ class JukeBox(commands.Cog):
         self.channel = info_channel
         self.playlist = []
         self.voice_instance = None
-        print(f"Jukebox initialized with {info_channel.name} channel", flush=True)
         self.bot.loop.create_task(self.people_check())
         self.bot.loop.create_task(self.info_channel())
         self.bot.loop.create_task(self.idle_timer())
@@ -25,34 +22,25 @@ class JukeBox(commands.Cog):
     @commands.command(name="play")
     @jukebox_channel_only
     async def play(self, ctx):
-        print(f"Play command received in {ctx.channel.name} channel", flush=True)
         if not ctx.author.voice:
             return await ctx.send("You are not in a voice channel.")
-        print(f"{ctx.author.name} is not in a voice channel", flush=True)
         if self.voice_instance and self.voice_instance.channel.id != ctx.author.voice.channel.id:
             return await ctx.send("You are not in the same voice channel as me.")
-        print(f"User {ctx.author.name} is in wrong voice channel", flush=True)
         if not self.voice_instance:
             self.voice_instance = await ctx.author.voice.channel.connect()
-        print(f"Connected to voice channel for user {ctx.author.name}", flush=True)
         if not self.valid_request(ctx):
             return await ctx.send("Invalid request. Please try again.")
-        print(f"User {ctx.author.name} has a valid YouTube link", flush=True)
         await self.process_request(ctx)
 
     async def people_check(self):
         while True:
-            print(f"People check running for Jukebox in channel {self.channel.name}", flush=True)
             if self.voice_instance and len(self.voice_instance.channel.members) < 2:
                 self.playlist = []
                 await self.voice_instance.disconnect()
                 self.voice_instance = None
-                print("User count in voice channel is low, clearing playlist", flush=True)
-            print(f"People check ran for Jukebox in channel {self.channel.name}", flush=True)
             await asyncio.sleep(10)
 
     async def info_channel(self):
-        print(f"Info channel running for Jukebox in {self.channel.name} channel", flush=True)
         await self.channel.purge()
         # Initial embed when starting up the Jukebox
         embed = discord.Embed(
@@ -71,7 +59,7 @@ class JukeBox(commands.Cog):
             outof = min(length, 10)  # Adjust max songs displayed
             playlist = ""
             # Construct the playlist string
-            for i, song in enumerate(self.playlist[1:10], 1):
+            for i, song in enumerate(self.playlist[1:11], 1):
                 time = self.format_time(song['duration'])
                 # Format the song info with fixed-width fields
                 playlist += f"`{i:2}. {song['artist'][:13]:<13} - {song['song_name'][:26]:<26} - {time}`\n"
@@ -124,9 +112,7 @@ class JukeBox(commands.Cog):
                     last_playing_message = "No song playing at the moment."
                     await message_instance.edit(embed=embed, view=None)
 
-            print(f"Info channel check ran for Jukebox in {self.channel.name} channel", flush=True)
             await asyncio.sleep(3)
-
     async def idle_timer(self):
         while True:
             idle_time = 0
@@ -136,30 +122,20 @@ class JukeBox(commands.Cog):
                     if idle_time > 10:
                         await self.voice_instance.disconnect()
                         self.voice_instance = None
-                        print("Idle timer detected no audio playing, clearing voice instance", flush=True)
                 else:
                     idle_time = 0
             else:
                 idle_time = 0
-            print(f"Idle timer ran for Jukebox in channel {self.channel.name}", flush=True)
             await asyncio.sleep(30)
 
     def valid_request(self, ctx):
         regex = r'(https?://)?(www\.)?(youtube\.com|youtu\.be|music\.youtube\.com)/'
         request = ctx.message.content.split("!play ", 1)[1]
-        print(f"Checking if {request} is a valid YouTube link", flush=True)
         return bool(re.match(regex,request)) or not request.startswith(("http://", "https://", "www."))
     
     def format_time(self, duration):
-        try:
-        	minutes = f"{int(duration / 60)}"
-        except:
-            minutes = "00"
-        try:
-            seconds = f"{int(duration % 60):02d}"
-        except:
-            seconds = "00"
-        print(f"Formatting time for song with duration {duration} seconds", flush=True)
+        minutes = int(duration / 60)
+        seconds = f"{int(duration % 60):02d}"
         return f"{minutes}:{seconds}"
 
     async def search_youtube(self, ctx):
@@ -184,21 +160,18 @@ class JukeBox(commands.Cog):
             embeds.append(embed)
         view = JukeboxView([str(i) for i in range(1, 6)], self, ctx)
         msg = await ctx.reply(embeds=embeds, view=view, delete_after=15)
-        print(f"Sending search results to channel {ctx.channel.name}", flush=True)
         await view.wait()
         if view.reply is not None:
             chosen_song = songs.pop(int(view.reply) - 1)
             await msg.delete()
             return f"https://www.youtube.com/watch?v={chosen_song['id']}"
         else:
-            print("No song was chosen from search results", flush=True)
             await msg.delete()
-
+    
     async def process_request(self, ctx):
         request = ctx.message.content.split("!play ", 1)[1]
         if not request.startswith(("http://", "https://", "www.")):
             request = await self.search_youtube(ctx)
-        print(f"Processing YouTube link {request} for user {ctx.author.name}", flush=True)
         try:
             info_dict = await self.get_dict(request)
             if 'entries' in info_dict:
@@ -207,7 +180,7 @@ class JukeBox(commands.Cog):
                 await ctx.reply(content=content, view=view, delete_after=10)
                 await view.wait()
                 if view.boolean:
-                    self.playlist.extend([self.get_song_info(entry) for entry in info_dict['entries']])
+                    self.playlist.extend([self.get_song_info(entry) for entry in info_dict['entries'] if entry['title'] != "[Deleted video]"])
                     if not self.voice_instance.is_playing():
                         await self.play_audio()
                     await ctx.reply(f"{len(info_dict['entries'])} songs added to queue.")
@@ -221,7 +194,7 @@ class JukeBox(commands.Cog):
             return
         else:
             await self.play_audio()
-
+        
     def get_song_info(self,entry):
         return {
             'artist': entry.get('uploader'),
@@ -230,7 +203,7 @@ class JukeBox(commands.Cog):
             'id': entry.get('id'),
             'duration': entry.get('duration')
         }
-
+    
     async def get_dict(self, request):
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -247,7 +220,7 @@ class JukeBox(commands.Cog):
         if self.playlist:
             await self.play_audio()
         else:
-            self.voice_instance.stop()
+            self.voice_instance.stop()    
     async def play_audio(self):
         request = self.playlist[0]['url']
         info_dict = await self.get_dict(request)
@@ -313,5 +286,3 @@ class JukeboxView(discord.ui.View):
                 await interaction.response.defer(ephemeral=True)
                 self.reply = custom_id
                 self.stop()
-
-
