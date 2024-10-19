@@ -313,6 +313,50 @@ async def win_loss(ctx):
     return combined_message
 
 
+async def set_denomination(player, denomination):
+
+    try:
+        with mysql.connector.connect(**sqldb) as con:
+            cur = con.cursor()
+            print(f"Connected to database for set denom", flush=True)
+
+            # Create table if it doesn't exist
+            cur.execute('''
+            CREATE TABLE IF NOT EXISTS denomination (
+                player TEXT,
+                denom BIGINT,
+            )''')
+            print("Table created", flush=True)
+
+            # Insert game log into table
+            cur.execute('''
+            INSERT INTO denomination (
+                player, denom
+            ) VALUES (%s, %s)
+            ''', (
+                player,
+                denomination
+
+            ))
+            con.commit()
+            print("new denomination committed to database", flush=True)
+
+    except Error as e:
+        print(f"Error: {e}", flush=True)
+
+async def get_denomination(player):
+    try:
+        with mysql.connector.connect(**sqldb) as con:
+            cur = con.cursor()
+            cur.execute("SELECT * FROM denomination WHERE player = %s", [player])
+            results = cur.fetchall()
+            if results == []:
+                 await set_denomination(player, 20)
+                 return 20
+            else:
+                return results
+    except Error as e:
+        print(f"Error: {e}", flush=True)
 
 
 

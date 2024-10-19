@@ -151,8 +151,14 @@ class JukeBox(commands.Cog):
         return bool(re.match(regex,request)) or not request.startswith(("http://", "https://", "www."))
     
     def format_time(self, duration):
-        minutes = int(duration / 60)
-        seconds = f"{int(duration % 60):02d}"
+        try:
+        	minutes = f"{int(duration / 60)}"
+        except:
+            minutes = "00"
+        try:
+            seconds = f"{int(duration % 60):02d}"
+        except:
+            seconds = "00"
         print(f"Formatting time for song with duration {duration} seconds", flush=True)
         return f"{minutes}:{seconds}"
 

@@ -11,7 +11,7 @@ class BlackJack:
         self.ctx = ctx
         self.pitboss = pitboss
         self.bet = bet
-        self.deck = Deck()
+        self.deck = Deck(1)
         self.player_hand = Hand()
         self.dealer_hand = Hand()
         self.whos_turn = ""
