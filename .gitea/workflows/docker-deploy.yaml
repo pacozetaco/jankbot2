@@ -42,8 +42,7 @@ jobs:
         run: |
           docker run -d \
           --name jankbot2-container-${{ env.TAG }} \
-          --network dockernet \
-          --ip 192.168.1.29 \
+          --network host \
           -e TZ=America/New_York \
           -e MYSQL_HOST=${{ secrets.MYSQL_HOST }} \
           -e MYSQL_PORT=${{ secrets.MYSQL_PORT }} \
