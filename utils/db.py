@@ -314,49 +314,51 @@ async def win_loss(ctx):
 
 
 async def set_denomination(player, denomination):
-
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database for set denom", flush=True)
+            print("Connected to database for setting denomination", flush=True)
 
             # Create table if it doesn't exist
             cur.execute('''
             CREATE TABLE IF NOT EXISTS denomination (
-                player TEXT,
-                denom BIGINT,
-            )''')
-            print("Table created", flush=True)
+                player VARCHAR(255) PRIMARY KEY,
+                denom BIGINT
+            )
+            ''')
+            print("Table created or already exists", flush=True)
 
-            # Insert game log into table
+            # Insert or update denomination in the table
             cur.execute('''
-            INSERT INTO denomination (
-                player, denom
-            ) VALUES (%s, %s)
+            INSERT INTO denomination (player, denom)
+            VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE denom = %s
             ''', (
                 player,
+                denomination,
                 denomination
-
             ))
             con.commit()
-            print("new denomination committed to database", flush=True)
+            print("New denomination committed to database", flush=True)
 
     except Error as e:
-        print(f"Error: {e}", flush=True)
+        print(f"Error in set_denomination: {e}", flush=True)
 
 async def get_denomination(player):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            cur.execute("SELECT * FROM denomination WHERE player = %s", [player])
+            cur.execute("SELECT denom FROM denomination WHERE player = %s", (player,))
             results = cur.fetchall()
-            if results == []:
-                 await set_denomination(player, 20)
-                 return 20
+            if not results:  # Check if results is empty
+                await set_denomination(player, 20)
+                return 20
             else:
-                return results
+                return results[0][0]
     except Error as e:
-        print(f"Error: {e}", flush=True)
+        set_denomination("testplayer", 20)
+        print(f"Error in get_denomination: {e}", flush=True)
+        return None  # Optionally return None on error
 
 
 

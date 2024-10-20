@@ -1,6 +1,7 @@
 import config, discord, utils.ark.config_uploader as config_uploader 
 from discord.ext import commands
 from utils.ark.arkinfo import ArkInfo, ArkRcon
+from games.baccarat import BaccaratManager
 
 print("Importing required modules...", flush=True)
 print("Modules imported successfully", flush=True)
@@ -54,6 +55,14 @@ class JankBot(commands.Bot):
                 print("Failed to initialize ArkInfo: Channels not found", flush=True)
         except Exception as e:
             print(f"Error initializing ArkInfo: {e}", flush=True)
+        
+        guilds = self.guilds
+        for guild in guilds:
+            for channel in guild.channels:
+                if channel.name.lower().startswith("baccarat"):
+                    self.loop.create_task(BaccaratManager.start_manager(self, channel))
+        
+
 
         # Attempt to initialize Jukebox
         try:
