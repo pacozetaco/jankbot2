@@ -5,7 +5,7 @@ OLLAMA_URL = "http://127.0.0.1:11434"  # Replace with your actual URL if differe
 
 async def chat(prompt):
     response = ollama.chat(
-    model="llama3.2:latest",  # Replace with your desired model
+    model="llama2-uncensored",  # Replace with your desired model
     messages=[
         {"role": "user", "content": prompt}
     ],
