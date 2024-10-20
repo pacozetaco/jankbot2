@@ -5,7 +5,7 @@ class Deck:
         print("Creating new deck...", flush=True)
         cards = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "j", "q", "k", "a"]
         suits = ["spade", "heart", "diamond", "club"]
-        i = 1
+        i = 0
         while(i < num_of_decks):
             for suit in suits:
                 for card in cards:
