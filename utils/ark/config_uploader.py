@@ -11,7 +11,7 @@ async def upload_config(message):
                 file_path = f"./temp/{attachment.filename}"
                 await attachment.save(file_path)
                 print(f"Config file {attachment.filename} saved to disk", flush=True)
-                await message.reply(f"Config file {attachment.filename} received!", flush=True)
+                await message.reply(f"Config file {attachment.filename} received!")
 
                 if attachment.filename == "GameUserSettings.ini":
                     try:
@@ -32,7 +32,7 @@ async def upload_config(message):
 
                     except Exception as e:
                         print(f"Error updating config file: {e}", flush=True)
-                        await message.reply(f"Failed to update the config file.", flush=True)
+                        await message.reply(f"Failed to update the config file.")
                         return
 
                 try:
@@ -55,7 +55,7 @@ async def upload_config(message):
                         sftp.put(file_path, f"{config.ARK_SFTP_UPLOAD_DIR}/{attachment.filename}")
                         print(f"Uploading file {attachment.filename} to SFTP server", flush=True)
                         
-                        await message.reply(f"File `{attachment.filename}` uploaded successfully!", flush=True)
+                        await message.reply(f"File `{attachment.filename}` uploaded successfully!")
                         
                         # Close the SSH connection
                         ssh.close()
@@ -63,7 +63,7 @@ async def upload_config(message):
 
                 except Exception as e:
                     print(f"Error uploading file: {e}", flush=True)
-                    await message.reply(f"Failed to upload the file due to an unexpected error.", flush=True)
+                    await message.reply(f"Failed to upload the file due to an unexpected error.")
 
                 finally:
                     # Ensure the temporary file is deleted
@@ -74,4 +74,4 @@ async def upload_config(message):
 
     else:
         print("No config file attached!", flush=True)
-        await message.reply("No config file attached!", flush=True)
+        await message.reply("No config file attached!")
