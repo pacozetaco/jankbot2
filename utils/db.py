@@ -18,7 +18,7 @@ async def daily_coins(message):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database at {now}", flush=True)
+        #    print(f"Connected to database at {now}", flush=True)
 
             # Create table if it doesn't exist
             cur.execute('''
@@ -27,7 +27,7 @@ async def daily_coins(message):
                 coins BIGINT, 
                 lastclaim DATE
             )''')
-            print("Table created", flush=True)
+        #    print("Table created", flush=True)
 
             # Check if the user exists
             cur.execute("SELECT * FROM jankcoins WHERE name = %s", [user_name])
@@ -35,20 +35,20 @@ async def daily_coins(message):
 
             if existing_user is None:
                 # If the user doesn't exist, insert a new record
-                print(f"User {user_name} does not exist", flush=True)
+           #     print(f"User {user_name} does not exist", flush=True)
                 cur.execute("INSERT INTO jankcoins (name, coins, lastclaim) VALUES (%s, %s, %s)", (user_name, 100, claim_date))
                 reply = "100 coins added! Balance: 100"
             elif existing_user[2] != claim_date:
                 # If the last claim date is not today, add 100 coins and update the last claim date
-                print(f"User {user_name} has coins from previous day", flush=True)
+          #      print(f"User {user_name} has coins from previous day", flush=True)
                 cur.execute('''UPDATE jankcoins SET coins = %s, lastclaim = %s WHERE name = %s''', (int(existing_user[1]) + 100, claim_date, user_name))
                 reply = f"100 coins added! Balance: {existing_user[1] + 100}"
             else:
-                print(f"User {user_name} already claimed today", flush=True)
+         #       print(f"User {user_name} already claimed today", flush=True)
                 reply = f"You already claimed today! Balance: {existing_user[1]}"
 
             con.commit()
-            print("Changes committed to database", flush=True)
+    #        print("Changes committed to database", flush=True)
     except Error as e:
         print(f"Error: {e}", flush=True)
         reply = "An error occurred, please try again later."
@@ -58,7 +58,7 @@ async def get_balance(user):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database at {datetime.now()}", flush=True)
+          #  print(f"Connected to database at {datetime.now()}", flush=True)
 
             # Select user data from jankcoins table
             cur.execute("SELECT * FROM jankcoins WHERE name = %s", [user])
@@ -67,7 +67,7 @@ async def get_balance(user):
             if result is None:
                 return 0
             else:
-                print(f"User {user} has balance of {result[1]}", flush=True)
+         #       print(f"User {user} has balance of {result[1]}", flush=True)
                 return result[1]
     except Error as e:
         print(f"Error: {e}", flush=True)
@@ -76,16 +76,16 @@ async def set_balance(user, transaction_amount):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database at {datetime.now()}", flush=True)
+          #  print(f"Connected to database at {datetime.now()}", flush=True)
 
             # Select user data from jankcoins table
             cur.execute("SELECT * FROM jankcoins WHERE name = %s", [user])
             user_data = cur.fetchone()
 
-            print(f"User {user} has balance of {user_data[1]}", flush=True)
+          #  print(f"User {user} has balance of {user_data[1]}", flush=True)
             cur.execute('''UPDATE jankcoins SET coins = %s WHERE name = %s''', (int(user_data[1]) + transaction_amount, user_data[0]))
             con.commit()
-            print("Changes committed to database", flush=True)
+         #   print("Changes committed to database", flush=True)
     except Error as e:
         print(f"Error: {e}", flush=True)
 
@@ -95,7 +95,7 @@ async def log_hilo(gamelog):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database at {now}", flush=True)
+          #  print(f"Connected to database at {now}", flush=True)
 
             # Create table if it doesn't exist
             cur.execute('''
@@ -109,7 +109,7 @@ async def log_hilo(gamelog):
                 roll INT,
                 result TEXT
             )''')
-            print("Table created", flush=True)
+         #   print("Table created", flush=True)
 
             # Insert game log into table
             cur.execute('''
@@ -126,7 +126,7 @@ async def log_hilo(gamelog):
                 gamelog.result
             ))
             con.commit()
-            print("Game log committed to database", flush=True)
+         #   print("Game log committed to database", flush=True)
 
     except Error as e:
         print(f"Error: {e}", flush=True)
@@ -137,7 +137,7 @@ async def log_deathroll(gamelog):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database at {now}", flush=True)
+          #  print(f"Connected to database at {now}", flush=True)
 
             # Create table if it doesn't exist
             cur.execute('''
@@ -151,7 +151,7 @@ async def log_deathroll(gamelog):
                 result TEXT,
                 gamecontent TEXT
             )''')
-            print("Table created", flush=True)
+          #  print("Table created", flush=True)
 
             # Insert game log into table
             cur.execute('''
@@ -168,7 +168,7 @@ async def log_deathroll(gamelog):
                 gamelog.game_content
             ))
             con.commit()
-            print("Game log committed to database", flush=True)
+          #  print("Game log committed to database", flush=True)
 
     except Error as e:
         print(f"Error: {e}", flush=True)
@@ -179,7 +179,7 @@ async def log_bj(gamelog):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print(f"Connected to database at {now}", flush=True)
+          #  print(f"Connected to database at {now}", flush=True)
 
             # Create table if it doesn't exist
             cur.execute('''
@@ -191,7 +191,7 @@ async def log_bj(gamelog):
                 bet BIGINT,
                 result TEXT
             )''')
-            print("Table created", flush=True)
+           # print("Table created", flush=True)
 
             # Insert game log into table
             cur.execute('''
@@ -206,7 +206,7 @@ async def log_bj(gamelog):
                 gamelog.result
             ))
             con.commit()
-            print("Game log committed to database", flush=True)
+         #   print("Game log committed to database", flush=True)
 
     except Error as e:
         print(f"Error: {e}", flush=True)
@@ -231,21 +231,21 @@ async def win_loss(ctx):
         try:
             with mysql.connector.connect(**sqldb) as con:
                 cur = con.cursor()
-                print(f"Connected to database at {datetime.now()}", flush=True)
+             #   print(f"Connected to database at {datetime.now()}", flush=True)
 
                 # Select game log from table
                 cur.execute(f"SELECT result, bet FROM {table} WHERE player = %s", [user])
                 rows = cur.fetchall()
                 
-                print(f"Fetched {len(rows)} game logs for user {user} in {game}", flush=True)
+             #   print(f"Fetched {len(rows)} game logs for user {user} in {game}", flush=True)
                 
                 for result, bet in rows:
                     if result == 'won':
-                        print(f"User {user} won {bet} coins in {game}", flush=True)
+                  #      print(f"User {user} won {bet} coins in {game}", flush=True)
                         game_stats[game]["wins"] += 1
                         game_stats[game]["coins_won"] += bet
                     elif result == 'lost':
-                        print(f"User {user} lost {bet} coins in {game}", flush=True)
+                 #       print(f"User {user} lost {bet} coins in {game}", flush=True)
                         game_stats[game]["losses"] += 1
                         game_stats[game]["coins_lost"] += bet
 
@@ -307,7 +307,7 @@ async def win_loss(ctx):
     # Combine both messages
     combined_message = win_loss_message + "\n" + coins_message
 
-    print(f"Sending game stats to Discord channel", flush=True)
+   # print(f"Sending game stats to Discord channel", flush=True)
     
     # Send the message to the Discord channel
     return combined_message
@@ -317,7 +317,7 @@ async def set_denomination(player, denomination):
     try:
         with mysql.connector.connect(**sqldb) as con:
             cur = con.cursor()
-            print("Connected to database for setting denomination", flush=True)
+           # print("Connected to database for setting denomination", flush=True)
 
             # Create table if it doesn't exist
             cur.execute('''
@@ -326,7 +326,7 @@ async def set_denomination(player, denomination):
                 denom BIGINT
             )
             ''')
-            print("Table created or already exists", flush=True)
+          #  print("Table created or already exists", flush=True)
 
             # Insert or update denomination in the table
             cur.execute('''
@@ -339,7 +339,7 @@ async def set_denomination(player, denomination):
                 denomination
             ))
             con.commit()
-            print("New denomination committed to database", flush=True)
+           # print("New denomination committed to database", flush=True)
 
     except Error as e:
         print(f"Error in set_denomination: {e}", flush=True)

@@ -14,7 +14,7 @@ class BaccaratManager:
 
     @classmethod
     async def start_manager(cls, bot, channel):
-        print("Starting Baccarat instance...", flush=True)
+        #print("Starting Baccarat instance...", flush=True)
         instance = cls(bot, channel)
         await instance.game_loop()
 
@@ -54,7 +54,7 @@ class Shoe:
 
     @classmethod
     async def start_shoe(cls, baccarat_manager):
-        print("Starting new shoe", flush=True)
+        #print("Starting new shoe", flush=True)
         instance = cls(baccarat_manager)
         await instance.shoe_loop()
 

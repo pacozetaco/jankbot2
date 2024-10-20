@@ -6,3 +6,4 @@ docker
 paramiko
 mcrcon
 yt_dlp
+ollama

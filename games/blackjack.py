@@ -7,7 +7,7 @@ print("Importing modules...", flush=True)
 
 class BlackJack:
     def __init__(self, ctx, bet, pitboss):
-        print(f"Initializing game with player {ctx.author.name}...", flush=True)
+        #print(f"Initializing game with player {ctx.author.name}...", flush=True)
         self.ctx = ctx
         self.pitboss = pitboss
         self.bet = bet
@@ -25,7 +25,7 @@ class BlackJack:
         self.selected_button = ""
 
     def draw_game(self):
-        print("Drawing game...", flush=True)
+       # print("Drawing game...", flush=True)
         font = ImageFont.truetype("./assets/font/pixel_font.ttf", 15)
         table_path = "./assets/tables/blackjack_table.png"
         def paste_cards(hand, x):
@@ -54,7 +54,7 @@ class BlackJack:
         self.game_pic = discord.File(self.game_pic_path)
 
     def hand_value(self, hand):
-        print("Calculating hand value...", flush=True)
+       # print("Calculating hand value...", flush=True)
         card_values = {
             '0': 0, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
             'j': 10, 'q': 10, 'k': 10, 'a': 11
@@ -68,7 +68,7 @@ class BlackJack:
         return score
 
     async def initialize_game(self):
-        print("Initializing game...", flush=True)
+      #  print("Initializing game...", flush=True)
         self.pitboss.active_games[self.player] = "BlackJack"
         for _ in range(2):
             self.player_hand.draw(self.deck)
@@ -79,7 +79,7 @@ class BlackJack:
             self.whos_turn = "BlackJack"
             self.game_ongoing = False
         self.game_instance = await self.ctx.reply("Shuffling deck...")
-        print(f"Game initialized with player {self.player}...", flush=True)
+      #  print(f"Game initialized with player {self.player}...", flush=True)
 
     async def players_turn(self):
         while self.game_ongoing:
@@ -104,7 +104,7 @@ class BlackJack:
             while self.waiting_for_react:
                 i += 1
                 await asyncio.sleep(1)
-                print(f"Waiting for player to react...", flush=True)
+                #print(f"Waiting for player to react...", flush=True)
                 if i == 30:
                     self.waiting_for_react = False
                     view.stop()
@@ -124,7 +124,7 @@ class BlackJack:
                 await self.game_instance.edit(view = None)
                 self.game_ongoing = False
                 self.whos_turn = "Timeout"
-                print(f"Game ended due to timeout...", flush=True)
+               # print(f"Game ended due to timeout...", flush=True)
     
     def dealers_turn(self):
         while True:
@@ -132,7 +132,7 @@ class BlackJack:
             if hand_value >= 17:
                 break
             self.dealer_hand.draw(self.deck)
-            print(f"Dealer drew a card...", flush=True)
+           # print(f"Dealer drew a card...", flush=True)
 
     def who_won(self):
         player_score = self.hand_value(self.player_hand.hand)
@@ -154,7 +154,7 @@ class BlackJack:
             return
     
     async def transaction_logic(self):
-        print("Processing transactions...", flush=True)
+       # print("Processing transactions...", flush=True)
         if self.whos_turn == "BlackJack":
             if self.result == "won":
                 await db.set_balance(self.player, self.bet*1.5)
@@ -167,7 +167,7 @@ class BlackJack:
             await db.set_balance(self.player, -self.bet)
 
     async def end_game(self):
-        print("Ending game...", flush=True)
+      #  print("Ending game...", flush=True)
         self.whos_turn = ""
         self.pitboss.active_games.pop(self.player)
         await db.log_bj(self)
@@ -213,7 +213,7 @@ class BlackJack:
     @classmethod
     async def start_game(cls, ctx, bet: int, pitboss):
         instance = cls(ctx, bet, pitboss)
-        print(f"Starting game for player {ctx.author.name}...", flush=True)
+      #  print(f"Starting game for player {ctx.author.name}...", flush=True)
         await instance.blackjack()
 
 class BlackjackView(discord.ui.View):
@@ -224,40 +224,41 @@ class BlackjackView(discord.ui.View):
         for button_label in buttons:
             if button_label == "Play Again" or button_label == "Double Down":
                 style = discord.ButtonStyle.green
+            elif button_label == "Hit":
                 style = discord.ButtonStyle.blurple
-                print(f"Button {button_label} created with style {style.value}", flush=True)
+           #     print(f"Button {button_label} created with style {style.value}", flush=True)
             elif button_label == "Stand":
                 style = discord.ButtonStyle.red
-                print(f"Button {button_label} created with style {style.value}", flush=True)
+          #      print(f"Button {button_label} created with style {style.value}", flush=True)
             else:
                 style = discord.ButtonStyle.gray  # Default style for safety
-                print(f"Button {button_label} created with style {style.value}", flush=True)
+          #      print(f"Button {button_label} created with style {style.value}", flush=True)
 
             # Create the button
             button = discord.ui.Button(label=button_label, style=style)
 
             # Set the callback for each button dynamically based on its label
             if button_label == "Hit":
-                print("Setting Hit button callback...", flush=True)
+            #    print("Setting Hit button callback...", flush=True)
                 button.callback = self.hit_button_callback
             elif button_label == "Stand":
-                print("Setting Stand button callback...", flush=True)
+           #     print("Setting Stand button callback...", flush=True)
                 button.callback = self.stand_button_callback
             elif button_label == "Double Down":
-                print("Setting Double Down button callback...", flush=True)
+           #     print("Setting Double Down button callback...", flush=True)
                 button.callback = self.double_down_button_callback
             elif button_label == "Play Again":
-                print("Setting Play Again button callback...", flush=True)
+           #     print("Setting Play Again button callback...", flush=True)
                 button.callback = self.play_again_button_callback
             # Add button to the view
-            print(f"Adding button {button_label} to the view", flush=True)
+          #  print(f"Adding button {button_label} to the view", flush=True)
             self.add_item(button)
 
     # Callback for the "Hit" button
     async def hit_button_callback(self, interaction: discord.Interaction):
         if interaction.user != self.bjgame.ctx.author:
             return
-        print("Hit button pressed...", flush=True)
+     #   print("Hit button pressed...", flush=True)
         self.bjgame.selected_button = "Hit"
         self.bjgame.waiting_for_react = False
         await interaction.response.defer()
@@ -267,7 +268,7 @@ class BlackjackView(discord.ui.View):
     async def stand_button_callback(self, interaction: discord.Interaction):
         if interaction.user != self.bjgame.ctx.author:
             return
-        print("Stand button pressed...", flush=True)
+       # print("Stand button pressed...", flush=True)
         self.bjgame.selected_button = "Stand"
         self.bjgame.waiting_for_react = False
         await interaction.response.defer()
@@ -277,7 +278,7 @@ class BlackjackView(discord.ui.View):
     async def double_down_button_callback(self, interaction: discord.Interaction):
         if interaction.user != self.bjgame.ctx.author:
             return
-        print("Double Down button pressed...", flush=True)
+      #  print("Double Down button pressed...", flush=True)
         self.bjgame.selected_button = "Double Down"
         self.bjgame.waiting_for_react = False
         await interaction.response.defer()
@@ -287,7 +288,7 @@ class BlackjackView(discord.ui.View):
     async def play_again_button_callback(self, interaction: discord.Interaction):
         if interaction.user != self.bjgame.ctx.author:
             return
-        print("Play Again button pressed...", flush=True)
+      #  print("Play Again button pressed...", flush=True)
         self.bjgame.selected_button = "Play Again"
         self.bjgame.waiting_for_react = False
         await interaction.response.defer()
