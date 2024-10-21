@@ -266,14 +266,14 @@ class JukeboxView(discord.ui.View):
         if custom_id in ("Yes", "No"):
             if interaction.user == self.ctx.author:
                 self.boolean = custom_id == "Yes"
-                await interaction.response.defer()
+                await interaction.response.send_message("OK", ephemeral=True, delete_after=5)
                 self.stop()
         elif custom_id in ("Pause", "Play"):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
                 self.jukebox.voice_instance.pause() if custom_id == "Pause" else self.jukebox.voice_instance.resume()
-                if custom_id == "Pause":
-                    await self.jukebox.loop.create_task(self.jukebox.idle_timer())
                 await interaction.response.defer()
+                if custom_id == "Pause":
+                    await self.jukebox.bot.loop.create_task(self.jukebox.idle_timer())
         elif custom_id in ("Nuke", "Shuffle", "Skip"):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
                 if custom_id == "Nuke":
