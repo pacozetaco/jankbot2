@@ -31,8 +31,8 @@ class Shoe:
 
     async def initialize_game(self):
         await self.baccarat_manager.channel.purge()
-        game_view = BacView(["Player", "Tie", "Banker"], self)
-        bet_view = BacView(["20", "40", "60", "80", "100", "120", "140", "160", "180", "200"],self)
+        game_view = BacView(["Player", "Tie", "Banker", "No Bet"], self)
+        bet_view = BacView(["20", "40", "60", "80", "100", "200", "300", "500", "1000", "2000"],self)
         #draw gameboard and history
         self.game_instance = await self.baccarat_manager.channel.send(view=game_view, content="test")
         self.bet_instance = await self.baccarat_manager.channel.send(view=bet_view, content="test")
@@ -85,8 +85,23 @@ class BacView(discord.ui.View):
             balance = 0
         bet = await db.get_denomination(player)
         if custom_id in ("Player", "Banker", "Tie") and balance >= bet:
-            self.shoe.bets.append([custom_id, player, bet])
-            await interaction.response.send_message(content=f"Bet:{bet} - {custom_id}", ephemeral=True, delete_after=5)
+            players_in_bets = [sublist[1] for sublist in self.shoe.bets]
+            if player not in players_in_bets:
+                self.shoe.bets.append([custom_id, player, bet])
+                await interaction.response.send_message(content=f"Bet:{bet} - {custom_id}", ephemeral=True, delete_after=5)
+            else:
+                await interaction.response.send_message(content="You already have a bet!", ephemeral=True, delete_after=5)
+        elif custom_id == "No Bet":
+            players_in_bets = [sublist[1] for sublist in self.shoe.bets]
+            if player in players_in_bets:
+                for i, sublist in enumerate(self.shoe.bets):
+                    if sublist[1] == player:
+                        removed_bet = self.shoe.bets.pop(i)
+                        await interaction.response.send_message(content=f"Removed bet of {removed_bet[2]} for {removed_bet[1]}", ephemeral=True, delete_after=5)
+                        break
+            else:
+                await interaction.response.send_message(content="You don't have a bet to remove!", ephemeral=True, delete_after=5)
+
         elif custom_id.isdigit() and balance >= int(custom_id):
             await db.set_denomination(player, custom_id)
             await interaction.response.send_message(content=f"Bet set to {custom_id}", ephemeral=True, delete_after=5)

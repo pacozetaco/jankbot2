@@ -11,7 +11,6 @@ class JankBot(commands.Bot):
             intents=discord.Intents.all()
         )
 
-    
     #load cogs
     async def setup_hook(self):
 
