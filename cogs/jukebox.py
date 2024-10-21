@@ -15,9 +15,7 @@ class JukeBox(commands.Cog):
         self.channel = info_channel
         self.playlist = []
         self.voice_instance = None
-        self.bot.loop.create_task(self.people_check())
         self.bot.loop.create_task(self.info_channel())
-        self.bot.loop.create_task(self.idle_timer())
 
     @commands.command(name="play")
     @jukebox_channel_only
@@ -33,12 +31,10 @@ class JukeBox(commands.Cog):
         await self.process_request(ctx)
 
     async def people_check(self):
-        while True:
-            if self.voice_instance and len(self.voice_instance.channel.members) < 2:
-                self.playlist = []
-                await self.voice_instance.disconnect()
-                self.voice_instance = None
-            await asyncio.sleep(10)
+        if self.voice_instance and len(self.voice_instance.channel.members) < 2:
+            self.playlist = []
+            await self.voice_instance.disconnect()
+            self.voice_instance = None
 
     async def info_channel(self):
         await self.channel.purge()
@@ -122,10 +118,11 @@ class JukeBox(commands.Cog):
                     if idle_time > 10:
                         await self.voice_instance.disconnect()
                         self.voice_instance = None
+                        break
                 else:
-                    idle_time = 0
+                    break
             else:
-                idle_time = 0
+                break
             await asyncio.sleep(30)
 
     def valid_request(self, ctx):
@@ -216,11 +213,16 @@ class JukeBox(commands.Cog):
     async def after_playback(self, error):
         if error:
             print(error, flush=True)
-        self.playlist.pop(0)
-        if self.playlist:
-            await self.play_audio()
+            await self.voice_instance.disconnect()
+            self.voice_instance= None
         else:
-            self.voice_instance.stop()    
+            self.playlist.pop(0)
+            await self.people_check()
+            if self.playlist:
+                await self.play_audio()
+            else:
+                self.voice_instance.stop()
+                await self.bot.loop.create_task(self.idle_timer())    
     async def play_audio(self):
         request = self.playlist[0]['url']
         info_dict = await self.get_dict(request)
@@ -269,6 +271,8 @@ class JukeboxView(discord.ui.View):
         elif custom_id in ("Pause", "Play"):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
                 self.jukebox.voice_instance.pause() if custom_id == "Pause" else self.jukebox.voice_instance.resume()
+                if custom_id == "Pause":
+                    await self.jukebox.loop.create_task(self.jukebox.idle_timer())
                 await interaction.response.defer()
         elif custom_id in ("Nuke", "Shuffle", "Skip"):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
