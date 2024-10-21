@@ -11,7 +11,7 @@ class JankBot(commands.Bot):
             intents=discord.Intents.all()
         )
 
-    #load cogs
+    #load cogs why is this fucked???
     async def setup_hook(self):
 
         await self.load_extension('cogs.pitboss')
