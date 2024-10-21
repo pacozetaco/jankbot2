@@ -197,11 +197,12 @@ class JukeBox(commands.Cog):
             await self.people_check()
             if self.playlist != []:
                 self.playlist.pop(0)
+                await self.info_channel()
                 if self.playlist != []:
                     await self.play_audio()
-            else:
-                self.voice_instance.stop()
-                await self.bot.loop.create_task(self.idle_timer()) 
+                else:
+                    self.voice_instance.stop()
+                    await self.bot.loop.create_task(self.idle_timer()) 
 
     async def play_audio(self):
         request = self.playlist[0]['url']
