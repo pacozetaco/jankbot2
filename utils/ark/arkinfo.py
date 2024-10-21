@@ -63,7 +63,7 @@ class ArkInfo():
                #     print("Players updated...", flush=True)
                     rcon = ArkRcon("GetChat")
                     chat_messages = rcon.execute_command()
-                    if chat_messages != 'Server received, But no response!! \n ' and not chat_messages.startswith('SERVER:'):
+                    if chat_messages != 'Server received, But no response!! \n ' and not chat_messages.startswith('SERVER:') and not chat_messages == None:
                #         print("Sending chat messages...", flush=True)
                         await self.chat_channel.send(chat_messages) 
                 else:

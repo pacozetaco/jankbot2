@@ -14,8 +14,19 @@ class JukeBox(commands.Cog):
         self.bot = bot
         self.channel = info_channel
         self.playlist = []
+        self.message_instance = None
         self.voice_instance = None
-        self.bot.loop.create_task(self.info_channel())
+        self.bot.loop.create_task(self.info_prep())
+
+    async def info_prep(self):
+        await self.channel.purge()
+        embed = discord.Embed(
+            title="Booting up Jukebox",
+            color=discord.Color.blue()
+        )
+        self.message_instance = await self.channel.send(embed=embed)
+        await self.info_channel()
+
 
     @commands.command(name="play")
     @jukebox_channel_only
@@ -37,78 +48,40 @@ class JukeBox(commands.Cog):
             self.voice_instance = None
 
     async def info_channel(self):
-        await self.channel.purge()
-        # Initial embed when starting up the Jukebox
-        embed = discord.Embed(
-            title="Booting up Jukebox",
-            color=discord.Color.blue()
-        )
-        message_instance = await self.channel.send(embed=embed)
-
-        last_playing_message = "No song playing"
-        last_playlist = ""
-        last_image = "https://i.imgur.com/AJpM3Oc.jpeg"  # Default image
-        currently_playing_message = "No song playing"
-
-        while True:
-            length = len(self.playlist)-1
-            outof = min(length, 10)  # Adjust max songs displayed
-            playlist = ""
-            # Construct the playlist string
+        length = len(self.playlist)-1
+        outof = min(length, 10)  # Adjust max songs displayed
+        playlist = ""
+        if self.playlist != []:
             for i, song in enumerate(self.playlist[1:11], 1):
                 time = self.format_time(song['duration'])
                 # Format the song info with fixed-width fields
                 playlist += f"`{i:2}. {song['artist'][:13]:<13} - {song['song_name'][:26]:<26} - {time}`\n"
+            # Format currently playing song
+            time = self.format_time(self.playlist[0]['duration'])
+            currently_playing_message = (
+                f"Playing: {self.playlist[0]['artist']} - "
+                f"{self.playlist[0]['song_name']} - {time}"
+            )
+            image_link = f"https://img.youtube.com/vi/{self.playlist[0]['id']}/maxresdefault.jpg"
 
-            if self.playlist != []:
-                # Format currently playing song
-                time = self.format_time(self.playlist[0]['duration'])
-                if self.voice_instance.is_paused() == True:
-                    pp = "Paused"
-                else:
-                    pp = "Playing"
-                currently_playing_message = (
-                    f"{pp}: {self.playlist[0]['artist']} - "
-                    f"{self.playlist[0]['song_name']} - {time}"
-                )
-                image_link = f"https://img.youtube.com/vi/{self.playlist[0]['id']}/maxresdefault.jpg"
+            embed = discord.Embed(title=currently_playing_message, color=discord.Color.blue())
+            embed.set_image(url=image_link)
+            embed.add_field(name=f"Song Queue {outof}/{length}", value=playlist, inline=False)  # Add the playlist as a field
+            buttons = ["Play", "Pause", "Skip", "Shuffle", "Nuke"]
+            view = JukeboxView(buttons, self, self.channel)
+            await self.message_instance.edit(embed=embed, view=view)
 
-                # Check if there are changes to update the embed
-                if (last_playing_message != currently_playing_message or
-                    last_playlist != playlist or
-                    last_image != image_link):
+        else:
+            # Default case when no song is playing
+            embed = discord.Embed(
+                color=discord.Color.blue()
+            )
+            embed.set_image(url="https://i.imgur.com/AJpM3Oc.jpeg")
+            embed.add_field(name="" ,value="To add songs, go to #jukebox-spam channel and type `!play <yt / yt music link or search for a song >`", inline=False)
+            embed.set_footer(text="We have Youtube Premium at home.")
+            embed.add_field(name=f"Song Queue 0/0", value="No songs in the playlist.", inline=False)  # Default playlist message
+            await self.message_instance.edit(embed=embed, view=None)
 
-                    # Create a new embed for currently playing
-                    embed = discord.Embed(title=currently_playing_message, color=discord.Color.blue())
-                    embed.set_image(url=image_link)
-                    embed.add_field(name=f"Song Queue {outof}/{length}", value=playlist, inline=False)  # Add the playlist as a field
-
-                    # Update the last states
-                    last_playing_message = currently_playing_message
-                    last_playlist = playlist
-                    last_image = image_link
-
-                    # Send updated embed
-                    buttons = ["Play", "Pause", "Skip", "Shuffle", "Nuke"]
-                    view = JukeboxView(buttons, self, self.channel)
-                    await message_instance.edit(embed=embed, view=view)
-
-            else:
-                # Default case when no song is playing
-                embed = discord.Embed(
-                    color=discord.Color.blue()
-                )
-                embed.set_image(url="https://i.imgur.com/AJpM3Oc.jpeg")
-                embed.add_field(name="" ,value="To add songs, go to #jukebox-spam channel and type `!play <yt / yt music link or search for a song >`", inline=False)
-                embed.set_footer(text="We have Youtube Premium at home.")
-                embed.add_field(name=f"Song Queue 0/0", value="No songs in the playlist.", inline=False)  # Default playlist message
-
-                # Only update if the message is not already showing this embed
-                if last_playing_message != "No song playing at the moment.":
-                    last_playing_message = "No song playing at the moment."
-                    await message_instance.edit(embed=embed, view=None)
-
-            await asyncio.sleep(3)
     async def idle_timer(self):
         while True:
             idle_time = 0
@@ -123,6 +96,7 @@ class JukeBox(commands.Cog):
                     break
             else:
                 break
+            await self.people_check()
             await asyncio.sleep(30)
 
     def valid_request(self, ctx):
@@ -178,7 +152,9 @@ class JukeBox(commands.Cog):
                 await view.wait()
                 if view.boolean:
                     self.playlist.extend([self.get_song_info(entry) for entry in info_dict['entries'] if entry['title'] != "[Deleted video]"])
-                    if not self.voice_instance.is_playing():
+                    if self.voice_instance.is_playing() or self.voice_instance.is_paused():
+                        pass
+                    else:
                         await self.play_audio()
                     await ctx.reply(f"{len(info_dict['entries'])} songs added to queue.")
             else:
@@ -187,6 +163,7 @@ class JukeBox(commands.Cog):
         except Exception as e:
             print(e, flush=True)
             return await ctx.send("Something went wrong. Please try again.")
+        await self.info_channel()
         if self.voice_instance.is_playing() or self.voice_instance.is_paused():
             return
         else:
@@ -215,14 +192,17 @@ class JukeBox(commands.Cog):
             print(error, flush=True)
             await self.voice_instance.disconnect()
             self.voice_instance= None
+            self.playlist = []
         else:
-            self.playlist.pop(0)
             await self.people_check()
-            if self.playlist:
-                await self.play_audio()
+            if self.playlist != []:
+                self.playlist.pop(0)
+                if self.playlist != []:
+                    await self.play_audio()
             else:
                 self.voice_instance.stop()
-                await self.bot.loop.create_task(self.idle_timer())    
+                await self.bot.loop.create_task(self.idle_timer()) 
+
     async def play_audio(self):
         request = self.playlist[0]['url']
         info_dict = await self.get_dict(request)
@@ -276,6 +256,7 @@ class JukeboxView(discord.ui.View):
                     await self.jukebox.bot.loop.create_task(self.jukebox.idle_timer())
         elif custom_id in ("Nuke", "Shuffle", "Skip"):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
+                await interaction.response.defer()
                 if custom_id == "Nuke":
                     self.jukebox.playlist = []
                     self.jukebox.voice_instance.stop()
@@ -284,9 +265,10 @@ class JukeboxView(discord.ui.View):
                     self.jukebox.playlist[1:] = random.sample(self.jukebox.playlist[1:], len(self.jukebox.playlist) - 1)
                 elif custom_id == "Skip":
                     self.jukebox.voice_instance.stop()
-                await interaction.response.defer()
+                await self.jukebox.info_channel()
+                await self.jukebox.bot.loop.create_task(self.jukebox.idle_timer())
         elif custom_id.isdigit():
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
-                await interaction.response.defer(ephemeral=True)
+                await interaction.response.defer()
                 self.reply = custom_id
                 self.stop()
