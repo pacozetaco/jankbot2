@@ -21,6 +21,7 @@ class JankBot(commands.Bot):
         except Exception as e:
             print(f"Error loading Opus: {e}", flush=True)
 
+
     async def on_message(self, message):
         if message.author.bot:
             return

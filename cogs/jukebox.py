@@ -1,5 +1,5 @@
 from discord.ext import commands
-import re, discord, yt_dlp, asyncio, random, functools
+import re, discord, yt_dlp, asyncio, random, functools, discord
 
 def jukebox_channel_only(func):
     @functools.wraps(func)
@@ -8,6 +8,7 @@ def jukebox_channel_only(func):
             return
         return await func(self, *args)
     return wrapper
+
     
 class JukeBox(commands.Cog):
     def __init__(self, bot, info_channel):
@@ -18,6 +19,13 @@ class JukeBox(commands.Cog):
         self.voice_instance = None
         self.bot.loop.create_task(self.info_prep())
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        await self.people_check()
+        if before.channel is not None and after.channel is None:
+            if member.id == self.bot.user.id:
+                await self.nuke_player()
+
     async def info_prep(self):
         await self.channel.purge()
         embed = discord.Embed(
@@ -27,6 +35,16 @@ class JukeBox(commands.Cog):
         self.message_instance = await self.channel.send(embed=embed)
         await self.info_channel()
 
+    async def nuke_player(self):
+        self.playlist = []
+        self.voice_instance = None
+        await self.info_channel()
+
+    @commands.command(name="leave")
+    @jukebox_channel_only
+    async def leave(self, ctx):
+        if self.voice_instance:
+            await self.voice_instance.disconnect()
 
     @commands.command(name="play")
     @jukebox_channel_only
@@ -43,9 +61,7 @@ class JukeBox(commands.Cog):
 
     async def people_check(self):
         if self.voice_instance and len(self.voice_instance.channel.members) < 2:
-            self.playlist = []
             await self.voice_instance.disconnect()
-            self.voice_instance = None
 
     async def info_channel(self):
         length = len(self.playlist)-1
@@ -83,20 +99,18 @@ class JukeBox(commands.Cog):
             await self.message_instance.edit(embed=embed, view=None)
 
     async def idle_timer(self):
+        idle_time = 0
         while True:
-            idle_time = 0
             if self.voice_instance is not None:
                 if not self.voice_instance.is_playing():
                     idle_time += 1
                     if idle_time > 10:
                         await self.voice_instance.disconnect()
-                        self.voice_instance = None
                         break
                 else:
                     break
             else:
                 break
-            await self.people_check()
             await asyncio.sleep(30)
 
     def valid_request(self, ctx):
@@ -191,17 +205,17 @@ class JukeBox(commands.Cog):
         if error:
             print(error, flush=True)
             await self.voice_instance.disconnect()
-            self.voice_instance= None
-            self.playlist = []
         else:
-            await self.people_check()
             if self.playlist != []:
                 self.playlist.pop(0)
                 await self.info_channel()
                 if self.playlist != []:
                     await self.play_audio()
                 else:
-                    self.voice_instance.stop()
+                    try:
+                        self.voice_instance.stop()
+                    except:
+                        pass
                     await self.bot.loop.create_task(self.idle_timer()) 
 
     async def play_audio(self):
