@@ -21,9 +21,10 @@ class JukeBox(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         await self.people_check()
-        if before.channel is not None and after.channel is None:
-            if member.id == self.bot.user.id:
-                await self.nuke_player()
+        if member == self.bot.user and after.channel is None:
+            self.voice_instance = None
+            self.playlist = []
+            await self.info_channel()
 
     async def info_prep(self):
         await self.channel.purge()
@@ -34,15 +35,11 @@ class JukeBox(commands.Cog):
         self.message_instance = await self.channel.send(embed=embed)
         await self.info_channel()
 
-    async def nuke_player(self):
-        self.playlist = []
-        self.voice_instance = None
-        await self.info_channel()
-
     @commands.command(name="leave")
     @jukebox_channel_only
     async def leave(self, ctx):
         if self.voice_instance:
+            self.playlist = []
             await self.voice_instance.disconnect()
 
     @commands.command(name="play")
@@ -50,38 +47,36 @@ class JukeBox(commands.Cog):
     async def play(self, ctx):
         if not ctx.author.voice:
             return await ctx.send("You are not in a voice channel.")
-        if self.voice_instance and self.voice_instance.channel.id != ctx.author.voice.channel.id:
-            return await ctx.send("You are not in the same voice channel as me.")
-        if not self.voice_instance:
+        elif not ctx.voice_client:
             self.voice_instance = await ctx.author.voice.channel.connect()
-        if not self.valid_request(ctx):
+        elif ctx.voice_client.channel.id != ctx.author.voice.channel.id:
+            return await ctx.send("You need to be in the same voice channel as the bot.")
+        elif not self.valid_request(ctx):
             return await ctx.send("Invalid request. Please try again.")
         await self.process_request(ctx)
 
     async def people_check(self):
         if self.voice_instance and len(self.voice_instance.channel.members) < 2:
+            self.playlist = []
             await self.voice_instance.disconnect()
 
     async def info_channel(self):
         length = len(self.playlist)-1
-        outof = min(length, 10)  # Adjust max songs displayed
+        outof = min(length, 10) 
         playlist = ""
         if self.playlist != []:
             for i, song in enumerate(self.playlist[1:11], 1):
                 time = self.format_time(song['duration'])
-                # Format the song info with fixed-width fields
                 playlist += f"`{i:2}. {song['artist'][:13]:<13} - {song['song_name'][:26]:<26} - {time}`\n"
-            # Format currently playing song
             time = self.format_time(self.playlist[0]['duration'])
             currently_playing_message = (
                 f"Playing: {self.playlist[0]['artist']} - "
                 f"{self.playlist[0]['song_name']} - {time}"
             )
             image_link = f"https://img.youtube.com/vi/{self.playlist[0]['id']}/maxresdefault.jpg"
-
             embed = discord.Embed(title=currently_playing_message, color=discord.Color.blue())
             embed.set_image(url=image_link)
-            embed.add_field(name=f"Song Queue {outof}/{length}", value=playlist, inline=False)  # Add the playlist as a field
+            embed.add_field(name=f"Song Queue {outof}/{length}", value=playlist, inline=False)  
             buttons = ["Play", "Pause", "Skip", "Shuffle", "Nuke"]
             view = JukeboxView(buttons, self, self.channel)
             await self.message_instance.edit(embed=embed, view=view)
@@ -93,7 +88,7 @@ class JukeBox(commands.Cog):
             embed.set_image(url="https://i.imgur.com/AJpM3Oc.jpeg")
             embed.add_field(name="" ,value="To add songs, go to #jukebox-spam channel and type `!play <yt / yt music link or search for a song >`", inline=False)
             embed.set_footer(text="We have Youtube Premium at home.")
-            embed.add_field(name=f"Song Queue 0/0", value="No songs in the playlist.", inline=False)  # Default playlist message
+            embed.add_field(name=f"Song Queue 0/0", value="No songs in the playlist.", inline=False) 
             await self.message_instance.edit(embed=embed, view=None)
 
     async def idle_timer(self):
@@ -207,14 +202,14 @@ class JukeBox(commands.Cog):
             if self.playlist != []:
                 self.playlist.pop(0)
                 await self.info_channel()
-                if self.playlist != []:
-                    await self.play_audio()
-                else:
-                    try:
-                        self.voice_instance.stop()
-                    except:
-                        pass
-                    await self.bot.loop.create_task(self.idle_timer()) 
+            if self.playlist != []:
+                await self.play_audio()
+            else:
+                try:
+                    self.voice_instance.stop()
+                except:
+                    pass
+                await self.bot.loop.create_task(self.idle_timer()) 
 
     async def play_audio(self):
         request = self.playlist[0]['url']
@@ -271,7 +266,7 @@ class JukeboxView(discord.ui.View):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
                 await interaction.response.defer()
                 if custom_id == "Nuke":
-                    self.jukebox.playlist = ["nuked"]
+                    self.jukebox.playlist = ["nuke"]
                     self.jukebox.voice_instance.stop()
                 elif custom_id == "Shuffle":
                     self.jukebox.playlist[1:] = random.sample(self.jukebox.playlist[1:], len(self.jukebox.playlist) - 1)
