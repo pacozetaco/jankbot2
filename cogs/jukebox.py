@@ -9,7 +9,6 @@ def jukebox_channel_only(func):
         return await func(self, *args)
     return wrapper
 
-    
 class JukeBox(commands.Cog):
     def __init__(self, bot, info_channel):
         self.bot = bot
@@ -88,7 +87,6 @@ class JukeBox(commands.Cog):
             await self.message_instance.edit(embed=embed, view=view)
 
         else:
-            # Default case when no song is playing
             embed = discord.Embed(
                 color=discord.Color.blue()
             )
@@ -273,15 +271,13 @@ class JukeboxView(discord.ui.View):
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
                 await interaction.response.defer()
                 if custom_id == "Nuke":
-                    self.jukebox.playlist = []
+                    self.jukebox.playlist = ["nuked"]
                     self.jukebox.voice_instance.stop()
                 elif custom_id == "Shuffle":
-                    import random
                     self.jukebox.playlist[1:] = random.sample(self.jukebox.playlist[1:], len(self.jukebox.playlist) - 1)
+                    await self.jukebox.info_channel()
                 elif custom_id == "Skip":
                     self.jukebox.voice_instance.stop()
-                await self.jukebox.info_channel()
-                await self.jukebox.bot.loop.create_task(self.jukebox.idle_timer())
         elif custom_id.isdigit():
             if interaction.user.voice and interaction.user.voice.channel == self.jukebox.voice_instance.channel:
                 await interaction.response.defer()
