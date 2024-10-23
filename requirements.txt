@@ -2,7 +2,7 @@ discord
 mysql-connector-python
 python-dotenv
 pillow
-docker
+aiodocker
 paramiko
 mcrcon
 yt_dlp
