@@ -3,7 +3,7 @@ from discord.ext import commands
 from utils.ark.arkinfo import ArkInfo, ArkRcon
 from games.baccarat import BaccaratManager
 from utils.aichat import process_ai_request
-
+#testing new shit
 class JankBot(commands.Bot):
     def __init__(self):
         super().__init__(
