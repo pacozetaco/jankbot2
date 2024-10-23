@@ -48,11 +48,11 @@ class JankBot(commands.Bot):
         except Exception as e:
             print(f"Error initializing ArkInfo: {e}", flush=True)
         
-        guilds = self.guilds
-        for guild in guilds:
-            for channel in guild.channels:
-                if channel.name.lower().startswith("baccarat"):
-                    self.loop.create_task(BaccaratManager.start_manager(self, channel))
+        # guilds = self.guilds
+        # for guild in guilds:
+        #     for channel in guild.channels:
+        #         if channel.name.lower().startswith("baccarat"):
+        #             self.loop.create_task(BaccaratManager.start_manager(self, channel))
     
         # Attempt to initialize Jukebox
         try:

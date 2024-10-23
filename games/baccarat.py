@@ -1,5 +1,5 @@
 from utils.cards import Deck, Hand
-import discord
+import discord, asyncio
 import utils.db as db
 import random
 
@@ -26,22 +26,51 @@ class Shoe:
         self.bets = []
         self.game_instance = None
         self.bet_instance = None
-        self.player_hand = Hand()
-        self.dealer_hand = Hand()
+        self.player_hand = None
+        self.dealer_hand = None
 
     async def initialize_game(self):
         await self.baccarat_manager.channel.purge()
         game_view = BacView(["Player", "Tie", "Banker", "No Bet"], self)
         bet_view = BacView(["20", "40", "60", "80", "100", "200", "300", "500", "1000", "2000"],self)
         #draw gameboard and history
-        self.game_instance = await self.baccarat_manager.channel.send(view=game_view, content="test")
-        self.bet_instance = await self.baccarat_manager.channel.send(view=bet_view, content="test")
+        self.game_instance = await self.baccarat_manager.channel.send(view=game_view)
+        embed = discord.Embed(title="Denomination")
+        self.bet_instance = await self.baccarat_manager.channel.send(view=bet_view, embed=embed)
+        self.baccarat_manager.bot.loop.create_task(self.wait_for_bets())
+        
+
+    async def wait_for_bets(self):
+        i = 0
+        while True:
+            if i == 10:
+                break
+            if len(self.bets) > 0:
+                i += 1
+        await asyncio.sleep(3)
+
+    async def update_gameboard(self):
+        for bet in self.bets:
+            if bet[0] == "Player":
+                pass
+                #add bet to player side
+            elif bet[0] == "Banker":
+                pass
+                #add bet to banker side
+            else:
+                pass
+                #add to tie side
+            #update gameboard with bets
 
 
     async def shoe_loop(self):
         cut_spot = random.randint(30, 100)
         #while len(self.deck.deck) > cut_spot:
         await self.initialize_game()
+        await self.bet_instance.delete()
+        await self.game_instance.edit(view=None)
+        #play the game
+        
 
             #initialize game in discord with views gameboard betting area
             #wait for bets
@@ -76,6 +105,7 @@ class BacView(discord.ui.View):
             button.callback = self.button_callback
             self.add_item(button)
 
+
     async def button_callback(self, interaction: discord.Interaction):
         custom_id = interaction.data["custom_id"]
         player = interaction.user.name
@@ -89,6 +119,7 @@ class BacView(discord.ui.View):
             if player not in players_in_bets:
                 self.shoe.bets.append([custom_id, player, bet])
                 await interaction.response.send_message(content=f"Bet:{bet} - {custom_id}", ephemeral=True, delete_after=5)
+                await self.shoe.update_bets()
             else:
                 await interaction.response.send_message(content="You already have a bet!", ephemeral=True, delete_after=5)
         elif custom_id == "No Bet":
@@ -98,6 +129,7 @@ class BacView(discord.ui.View):
                     if sublist[1] == player:
                         removed_bet = self.shoe.bets.pop(i)
                         await interaction.response.send_message(content=f"Removed bet of {removed_bet[2]} for {removed_bet[1]}", ephemeral=True, delete_after=5)
+                        await self.shoe.update_bets()
                         break
             else:
                 await interaction.response.send_message(content="You don't have a bet to remove!", ephemeral=True, delete_after=5)
@@ -107,3 +139,4 @@ class BacView(discord.ui.View):
             await interaction.response.send_message(content=f"Bet set to {custom_id}", ephemeral=True, delete_after=5)
         else:
             await interaction.response.send_message(f"You do not have enough money. Balance:{balance} - Bet:{bet}", ephemeral=True, delete_after=10)
+
