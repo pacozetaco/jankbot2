@@ -128,6 +128,8 @@ class ArkControlView(View):
         if not arkadmin_role:
             return await interaction.response.send_message("you dont have the right, ooooooo you dont have the right", ephemeral=True, delete_after=5)
         await interaction.response.send_message(f"Stopping the ARK server...Give this a sec, takes a bit.",ephemeral=True, delete_after=15)
+        rcon = ArkRcon("saveworld")
+        rcon.execute_command()
         await CONTAINER.stop()
 
     async def wipe_dinos_callback(self, interaction):

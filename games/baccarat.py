@@ -10,7 +10,7 @@ class BaccaratManager:
 
     async def game_loop(self):
         #while True:
-        await Shoe.start_shoe(self)
+            await Shoe.start_shoe(self)
 
     @classmethod
     async def start_manager(cls, bot, channel):
@@ -21,7 +21,7 @@ class BaccaratManager:
 class Shoe:
     def __init__(self, baccarat_manager):
         self.baccarat_manager = baccarat_manager
-        self.deck = Deck(8)
+        self.deck = Deck(1)
         self.game_history = []
         self.bets = []
         self.game_instance = None
@@ -30,25 +30,18 @@ class Shoe:
         self.dealer_hand = None
 
     async def initialize_game(self):
+        self.game_ongoing = True
         await self.baccarat_manager.channel.purge()
         game_view = BacView(["Player", "Tie", "Banker", "No Bet"], self)
         bet_view = BacView(["20", "40", "60", "80", "100", "200", "300", "500", "1000", "2000"],self)
         #draw gameboard and history
-        self.game_instance = await self.baccarat_manager.channel.send(view=game_view)
+        self.game_instance = await self.baccarat_manager.channel.send(view=game_view, content="TESTING")
         embed = discord.Embed(title="Denomination")
         self.bet_instance = await self.baccarat_manager.channel.send(view=bet_view, embed=embed)
-        self.baccarat_manager.bot.loop.create_task(self.wait_for_bets())
+    
+    async def update_bets(self):
+        pass
         
-
-    async def wait_for_bets(self):
-        i = 0
-        while True:
-            if i == 10:
-                break
-            if len(self.bets) > 0:
-                i += 1
-        await asyncio.sleep(3)
-
     async def update_gameboard(self):
         for bet in self.bets:
             if bet[0] == "Player":
@@ -62,13 +55,28 @@ class Shoe:
                 #add to tie side
             #update gameboard with bets
 
+    async def start_hand(self):
+        await self.bet_instance.delete()
+        await self.game_instance.edit(view = None)
+        self.player_hand = Hand()
+        self.dealer_hand = Hand()
+        print("we started this bish")
+        self.player_hand.draw(self.deck)
+        self.player_hand.draw(self.deck)
+        self.dealer_hand.draw(self.deck)
+        self.dealer_hand.draw(self.deck)
+        print(len(self.deck.deck))
+        self.bets = []
+        await self.shoe_loop()
+
 
     async def shoe_loop(self):
-        cut_spot = random.randint(30, 100)
-        #while len(self.deck.deck) > cut_spot:
-        await self.initialize_game()
-        await self.bet_instance.delete()
-        await self.game_instance.edit(view=None)
+        self.player_hand = None
+        self.dealer_hand = None
+        cut_spot = 40
+        if len(self.deck.deck) > cut_spot:
+            await self.initialize_game()
+        else: await self.baccarat_manager.game_loop()
         #play the game
         
 
@@ -93,6 +101,7 @@ class BacView(discord.ui.View):
         super().__init__(timeout=None)
         self.buttons = buttons
         self.shoe = shoe
+        self.new_bet = False
 
         for button_label in buttons:
             style = {
@@ -104,6 +113,18 @@ class BacView(discord.ui.View):
             button = discord.ui.Button(label=button_label, custom_id=button_label, style=style)
             button.callback = self.button_callback
             self.add_item(button)
+
+    async def start_timer(self):
+        i = 0
+        while i < 3:
+            if not self.shoe.bets:
+                self.new_bet = False
+                print("no bets!!!!!")
+                return
+            i += 1
+            print("going to sleep")
+            await asyncio.sleep(1)
+        await self.shoe.start_hand()
 
 
     async def button_callback(self, interaction: discord.Interaction):
@@ -120,6 +141,10 @@ class BacView(discord.ui.View):
                 self.shoe.bets.append([custom_id, player, bet])
                 await interaction.response.send_message(content=f"Bet:{bet} - {custom_id}", ephemeral=True, delete_after=5)
                 await self.shoe.update_bets()
+                if not self.new_bet:
+                    self.new_bet = True
+                    print("bet set to true")
+                    await self.start_timer()
             else:
                 await interaction.response.send_message(content="You already have a bet!", ephemeral=True, delete_after=5)
         elif custom_id == "No Bet":
