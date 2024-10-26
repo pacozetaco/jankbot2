@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 # Define the URL for your Ollama instance or API endpoint
 
-OLLAMA_URL = "http://127.0.0.1:11434" 
+OLLAMA_URL = "http://192.168.1.99:11434" 
 
 def chat(prompt):
     response = ollama.chat(
