@@ -7,7 +7,7 @@ OLLAMA_URL = "http://127.0.0.1:11434"
 
 def chat(prompt):
     response = ollama.chat(
-    model="llama2-uncensored",  
+    model="llama3.2:3b",  
     messages=[
         {"role": "user", "content": prompt}
     ],
